@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>關於《女神慾見 GoddeSpark》| 一個失控的學術專題</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script data-goatcounter="https://goddespark.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-color-night: #0a0a1a;
+            --text-color-night: #e0e0ff;
+            --card-bg-night: rgba(23, 13, 48, 0.4);
+            --border-color-night: rgba(255, 0, 222, 0.2);
+            --particle-color-night: rgba(255, 0, 222, 0.3);
+            --highlight-color-night: #ff00de;
+
+            --bg-color-day: #fff0f5;
+            --text-color-day: #5c3c4c;
+            --card-bg-day: rgba(255, 255, 255, 0.6);
+            --border-color-day: rgba(236, 72, 153, 0.3);
+            --particle-color-day: rgba(236, 72, 153, 0.4);
+            --highlight-color-day: #ec4899;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color-night);
+            color: var(--text-color-night);
+            overflow-x: hidden;
+            transition: background-color 0.8s ease, color 0.8s ease;
+        }
+        body.theme-day {
+            background-color: var(--bg-color-day);
+            color: var(--text-color-day);
+        }
+
+        #background-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+        }
+
+        .neon-text {
+            transition: text-shadow 0.8s ease;
+            text-shadow:
+                0 0 5px #fff,
+                0 0 10px var(--highlight-color-night),
+                0 0 20px var(--highlight-color-night),
+                0 0 30px var(--highlight-color-night);
+        }
+        body.theme-day .neon-text {
+            text-shadow: 0 0 10px var(--highlight-color-day);
+        }
+        
+        .highlight-text {
+            color: var(--highlight-color-night);
+        }
+        body.theme-day .highlight-text {
+            color: var(--highlight-color-day);
+        }
+
+        .section-card {
+            background-color: var(--card-bg-night);
+            border: 1px solid var(--border-color-night);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: all 0.5s ease;
+        }
+        body.theme-day .section-card {
+            background-color: var(--card-bg-day);
+            border-color: var(--border-color-day);
+        }
+        .section-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 0 30px var(--border-color-night);
+        }
+        body.theme-day .section-card:hover {
+            box-shadow: 0 0 30px var(--border-color-day);
+        }
+        
+        .glow-btn {
+            background: linear-gradient(45deg, #EC4899, #8B5CF6);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+            transition: all 0.3s ease;
+        }
+        .glow-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 35px rgba(236, 72, 153, 1);
+        }
+        
+        #theme-switch-btn {
+            position: fixed;
+            top: 20px; right: 20px;
+            z-index: 100;
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: rgba(31, 41, 55, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f5d0fe;
+        }
+        #theme-switch-btn:hover { transform: scale(1.1) rotate(15deg); }
+         body.theme-day #theme-switch-btn {
+            background-color: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0,0,0,0.1);
+            color: #f59e0b;
+        }
+        .emoji-face {
+            font-size: 5rem;
+            line-height: 1;
+            padding: 2rem;
+            background: var(--card-bg-night);
+            border-radius: 50%;
+            display: inline-block;
+            border: 1px solid var(--border-color-night);
+        }
+        body.theme-day .emoji-face {
+            background: var(--card-bg-day);
+            border-color: var(--border-color-day);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    
+    <canvas id="background-canvas"></canvas>
+    
+    <button id="theme-switch-btn" aria-label="切換日夜模式">
+        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+
+    <!-- Header -->
+    <header class="py-16 text-center">
+        <div class="container mx-auto px-6">
+            <h1 class="text-5xl md:text-7xl font-bold neon-text">女神慾見 GoddeSpark</h1>
+            <p class="text-xl md:text-2xl mt-4 max-w-3xl mx-auto">一個不小心從學術研究失控成「女神製造機」的專題...<br>而現在，我需要你來幫我完成它！</p>
+            <a href="https://goddespark.netlify.app" class="glow-btn inline-block mt-10 px-10 py-4 rounded-full font-bold text-lg shadow-lg">
+                <i class="fas fa-hand-sparkles mr-2"></i> 立即參與研究 (玩遊戲)
+            </a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 flex-grow">
+        
+        <!-- The Story -->
+        <section id="the-story" class="my-20">
+             <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold highlight-text">從專題工具到失控的遊戲</h2>
+                <p class="text-lg mt-2 max-w-2xl mx-auto">我發誓，我一開始真的只是想做個簡單的投票網站... 😭</p>
+            </div>
+            <div class="section-card p-8 rounded-lg max-w-4xl mx-auto text-center">
+                <p class="text-lg leading-relaxed mb-6">我的專題題目是「分析人類對不同風格 AI 圖像的偏好」，聽起來很單純對吧？</p>
+                <p class="text-lg leading-relaxed mb-6">但...我又覺得純投票太無聊，沒人想用怎麼辦？於是...</p>
+                <div class="space-y-4 text-left max-w-md mx-auto my-8 p-6 border-l-4 border-pink-500">
+                    <p>👉 「那...加個<strong class="highlight-text">扭蛋系統</strong>好了，抽別人的作品感覺比較好玩。」</p>
+                    <p>👉 「有扭蛋就要有<strong class="highlight-text">排行榜</strong>吧？看看誰的老婆最頂很合理啊！」</p>
+                    <p>👉 「啊如果每天次數用完就沒了，那...加個<strong class="highlight-text">祈願水龍頭</strong>，定時回來領，這樣大家才會常回來幫我增加數據吧？」</p>
+                </div>
+                <p class="text-lg leading-relaxed mt-6">就這樣，我的指導教授看著我的專題進度，露出了這個表情：</p>
+                <div class="my-8">
+                    <span class="emoji-face" title="一個意味深長的微笑">🙂</span>
+                </div>
+                <p class="text-lg leading-relaxed">老實說，做到現在有點超出專題的範圍了。但如果沒有足夠的「真人」數據，我的分析報告會非常空洞。所以，拜託了！</p>
+            </div>
+        </section>
+
+        <!-- Why I Need Your Help -->
+        <section id="why-help" class="my-20">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold highlight-text">為什麼你的每一次點擊都至關重要？</h2>
+                <p class="text-lg mt-2 max-w-3xl mx-auto">雖然網站變好玩了，但我的研究核心沒有變！教授反而問了幾個更深入、更尖銳的問題，而這些問題，只有大量的真人數據才能回答：</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="section-card p-8 rounded-lg flex flex-col">
+                    <div class="text-center mb-4"><i class="fas fa-gavel text-5xl highlight-text"></i></div>
+                    <h3 class="text-2xl font-bold mb-2 text-center">1. 社群的自我淨化能力</h3>
+                    <p class="flex-grow">在一個只有 AI 美圖的世界，社群的審美觀會如何淘汰作品？到底一張圖要收到多少<strong class="highlight-text">「倒讚」</strong>，系統自動將其刪除才是最適合的？你的每一次「我覺得不行」，都是在幫我定義這個標準。</p>
+                </div>
+                <div class="section-card p-8 rounded-lg flex flex-col">
+                    <div class="text-center mb-4"><i class="fas fa-couch text-5xl highlight-text"></i></div>
+                    <h3 class="text-2xl font-bold mb-2 text-center">2. AI 審美疲勞</h3>
+                    <p class="flex-grow">如果排行榜上永遠都是那些最受歡迎、最符合大眾口味的女神，當所有圖片都經過篩選後，我們最終會不會對這種<strong class="highlight-text">「完美」</strong>感到麻木和疲勞？你的偏好，將揭示這個趨勢。</p>
+                </div>
+                <div class="section-card p-8 rounded-lg flex flex-col">
+                    <div class="text-center mb-4"><i class="fas fa-robot text-5xl highlight-text"></i></div>
+                    <h3 class="text-2xl font-bold mb-2 text-center">3. AI 媒體的未來</h3>
+                    <p class="flex-grow">這是我最想探討的！現在只是圖片，但未來，新聞、廣告都可能由 AI 生成。我想預測當世界被 AI 內容充滿時，大家的觀感會如何？我們會相信 AI 嗎？還是會更渴望<strong class="highlight-text">「真實」</strong>？</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section id="features" class="my-20">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold highlight-text">你可以如何貢獻數據 (玩)</h2>
+                <p class="text-lg mt-2">你的每一次互動，都是在為我這個「AI 時代的社會預測分析」專題，提供最寶貴的數據！</p>
+            </div>
+            <div class="section-card p-8 rounded-lg max-w-4xl mx-auto grid md:grid-cols-2 gap-8 items-center">
+                <ul class="list-none space-y-4 text-lg">
+                    <li><strong class="text-xl">✅ 多種風格生成：</strong><br>選你喜歡的風格，創造你的女神。</li>
+                    <li><strong class="text-xl">👍 讚/倒讚系統：</strong><br>這是我最重要的數據！請用力表達你的喜好！</li>
+                    <li><strong class="text-xl">🏆 排行榜：</strong><br>即時數據儀表板，看看現在的審美風向。</li>
+                    <li><strong class="text-xl">🎰 女神扭蛋：</strong><br>邂逅別人的創作，看看大家的口味。</li>
+                    <li><strong class="text-xl">✨ 祈願系統：</strong><br>每 4 小時補充靈感 (和我專題的數據量)。</li>
+                </ul>
+                <div class="text-center">
+                    <i class="fas fa-database text-9xl highlight-text opacity-50"></i>
+                    <p class="mt-4 font-bold">你的玩樂 = 我的數據</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Final CTA -->
+        <section id="final-call" class="my-20 text-center">
+             <div class="section-card p-12 rounded-lg max-w-3xl mx-auto">
+                <h2 class="text-4xl font-bold highlight-text mb-4">救救專題生！</h2>
+                <p class="text-lg mb-8">真的非常需要大家的幫忙，讓我的專題報告不再只是空想，而是有真實的數據支撐。拜託大家花幾分鐘玩玩看，救救一個快被專題淹沒的學生 QQ</p>
+                <p class="text-sm mb-8 text-gray-400">(P.S. 如果想無限產圖，也可以匯入自己的 API Key，我會很感謝你！畢竟我的免費版次數有限...)</p>
+                <a href="https://goddespark.netlify.app" class="glow-btn inline-block px-12 py-5 rounded-full font-bold text-xl shadow-xl">
+                    <i class="fas fa-rocket mr-2"></i> 我來幫忙了！
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="container mx-auto px-6 py-8 text-gray-500 border-t border-gray-800 text-center">
+        <p>© 2025 <a href="https://layorx.github.io" target="_blank" class="hover:underline highlight-text">LayorX</a>. All Rights Reserved.</p>
+        <p class="text-xs mt-2">一個差點搞到延畢的學術專題。</p>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById('background-canvas');
+        const ctx = canvas.getContext('2d');
+        let particlesArray;
+
+        // --- FIX: Moved Particle class and related functions before they are called ---
+
+        // --- Background Particles ---
+        class Particle {
+            constructor(x, y, directionX, directionY, size, color) {
+                this.x = x; this.y = y; this.directionX = directionX; this.directionY = directionY; this.size = size; this.color = color;
+            }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false); ctx.fillStyle = this.color; ctx.fill();
+            }
+            update() {
+                if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+                if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+                this.x += this.directionX;
+                this.y += this.directionY;
+                this.draw();
+            }
+        }
+
+        function initParticles() {
+            if (!canvas) return;
+            canvas.width = window.innerWidth;
+            canvas.height = document.body.scrollHeight; // Make canvas cover the whole page height
+            particlesArray = [];
+            
+            const isDay = document.body.classList.contains('theme-day');
+            const particleColor = isDay 
+                ? getComputedStyle(document.documentElement).getPropertyValue('--particle-color-day').trim() 
+                : getComputedStyle(document.documentElement).getPropertyValue('--particle-color-night').trim();
+            
+            let numberOfParticles = (canvas.height * canvas.width) / 12000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                let size = (Math.random() * 2) + 1;
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                let directionX = (Math.random() * .4) - .2;
+                let directionY = (Math.random() * .4) - .2;
+                particlesArray.push(new Particle(x, y, directionX, directionY, size, particleColor));
+            }
+        }
+
+        function animateParticles() {
+            if (!canvas) return;
+            requestAnimationFrame(animateParticles);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if(particlesArray) {
+                for (let i = 0; i < particlesArray.length; i++) {
+                    particlesArray[i].update();
+                }
+            }
+        }
+
+        // --- Sound Engine ---
+        let sounds;
+        const startAudio = async () => {
+            try {
+                await Tone.start();
+                sounds = {
+                    toDay: () => new Tone.AMSynth().toDestination().triggerAttackRelease("C4", "2n"),
+                    toNight: () => new Tone.FMSynth().toDestination().triggerAttackRelease("G5", "8n")
+                };
+                console.log("Audio context started.");
+                document.body.removeEventListener('click', startAudio);
+                document.body.removeEventListener('touchend', startAudio);
+            } catch (e) {
+                console.error("Could not start audio context:", e);
+            }
+        };
+        document.body.addEventListener('click', startAudio);
+        document.body.addEventListener('touchend', startAudio);
+
+        // --- Theme Switch ---
+        const themeSwitchBtn = document.getElementById('theme-switch-btn');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        
+        function applyTheme(theme) {
+            if (theme === 'day') {
+                document.body.classList.add('theme-day');
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                document.body.classList.remove('theme-day');
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+            localStorage.setItem('theme', theme);
+            // Re-initialize particles with the correct theme color
+            if (typeof initParticles === 'function') {
+                initParticles();
+            }
+        }
+
+        themeSwitchBtn.addEventListener('click', () => {
+            const currentTheme = document.body.classList.contains('theme-day') ? 'day' : 'night';
+            if (currentTheme === 'night') {
+                if(sounds) sounds.toDay();
+                applyTheme('day');
+                localStorage.setItem("theme","day")
+            } else {
+                if(sounds) sounds.toNight();
+                applyTheme('night');
+                localStorage.setItem("theme","night")
+            }
+        });
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'night';
+        applyTheme(savedTheme);
+        
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                initParticles();
+            }, 250);
+        });
+        
+        // Initial setup
+        initParticles();
+        animateParticles();
+    });
+    </script>
+</body>
+</html>
