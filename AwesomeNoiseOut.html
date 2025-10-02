@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專案願景：智慧資訊過濾器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Slate Blue -->
+    <!-- Application Structure Plan: 我設計了一個故事性的單頁滾動佈局，從「為何需要（痛點）」開始，接著是「我們做什麼（功能亮點）」，然後是「我們與他人的不同（市場比較）」，最後是「如何實現（發展藍圖）」。這種結構能引導使用者逐步深入理解專案，透過互動式分頁和動態圖表取代靜態列表與表格，讓資訊更具吸引力且易於吸收，從而有效地傳達專案的核心價值與可行性。 -->
+    <!-- Visualization & Content Choices: 1. 功能亮點（來自報告B節）：目標是組織化呈現。我選擇了互動式分頁卡片（HTML/JS），取代靜態列表，讓使用者能主動探索各項功能，點擊後展開詳細說明，提升參與感。 2. 市場比較（來自報告C節）：目標是清晰比較。我使用Chart.js（Canvas）建立了一個雷達圖，將表格中的定性比較轉為多維度的視覺化評分，能直觀地展示本專案相對於競品的獨特優勢。 3. 發展藍圖（來自報告D節）：目標是告知步驟。我用HTML/CSS Flexbox設計了一個視覺化的流程圖，將文字建議轉化為清晰的步驟，比條列式文字更易於理解與記憶。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link:hover {
+            color: #3b82f6;
+        }
+        .nav-link.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        .feature-tab.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .feature-tab {
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .fade-in {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-slate-50/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-slate-800">專案願景</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#vision" class="nav-link text-slate-600 font-medium border-b-2 border-transparent pb-1">核心價值</a>
+                <a href="#features" class="nav-link text-slate-600 font-medium border-b-2 border-transparent pb-1">功能亮點</a>
+                <a href="#comparison" class="nav-link text-slate-600 font-medium border-b-2 border-transparent pb-1">市場比較</a>
+                <a href="#roadmap" class="nav-link text-slate-600 font-medium border-b-2 border-transparent pb-1">發展藍圖</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="bg-white">
+            <div class="container mx-auto px-6 py-20 md:py-32 text-center">
+                <h2 class="text-4xl md:text-6xl font-bold text-blue-600 leading-tight">智慧資訊過濾器</h2>
+                <p class="mt-4 text-lg md:text-xl text-slate-600 max-w-3xl mx-auto">在資訊爆炸的時代，為您奪回注意力的主導權，打造一個更清靜、更專注的數位世界。</p>
+            </div>
+        </section>
+
+        <section id="vision" class="py-16 md:py-24 fade-in">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl md:text-4xl font-bold">專案核心價值</h3>
+                    <p class="mt-3 text-slate-500 max-w-2xl mx-auto">本專案不僅是個工具，更是一種「數位排毒」與「資訊健檢」的解決方案，旨在解決現代人的資訊焦慮。</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <div class="bg-white p-8 rounded-xl shadow-md transition-transform hover:scale-105">
+                        <div class="text-4xl mb-4">🎯</div>
+                        <h4 class="text-xl font-bold mb-2">精準打擊痛點</h4>
+                        <p class="text-slate-600">有效過濾假新聞、農場文與情緒化標題，讓您遠離不必要的資訊噪音。</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-md transition-transform hover:scale-105">
+                        <div class="text-4xl mb-4">🧠</div>
+                        <h4 class="text-xl font-bold mb-2">奪回注意力主權</h4>
+                        <p class="text-slate-600">從被動接收演算法推送，轉變為主動定義自己的內容邊界，專注於真正重要的事。</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-md transition-transform hover:scale-105">
+                        <div class="text-4xl mb-4">🛡️</div>
+                        <h4 class="text-xl font-bold mb-2">兼顧廣度與深度</h4>
+                        <p class="text-slate-600">獨創「過濾報告」功能，避免陷入資訊繭房，確保您在享受清靜的同時不與世界脫節。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="bg-white py-16 md:py-24 fade-in">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl md:text-4xl font-bold">互動功能亮點</h3>
+                    <p class="mt-3 text-slate-500 max-w-2xl mx-auto">透過直觀且強大的功能，我們將資訊的控制權交還給您。點擊下方卡片來探索各項核心功能。</p>
+                </div>
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-center gap-4 mb-8">
+                        <button data-tab="filter" class="feature-tab active text-lg font-semibold py-3 px-6 rounded-lg shadow-sm border border-slate-200">過濾系統</button>
+                        <button data-tab="platform" class="feature-tab text-lg font-semibold py-3 px-6 rounded-lg shadow-sm border border-slate-200 bg-slate-100 text-slate-700">跨平台支援</button>
+                        <button data-tab="report" class="feature-tab text-lg font-semibold py-3 px-6 rounded-lg shadow-sm border border-slate-200 bg-slate-100 text-slate-700">智慧報告</button>
+                    </div>
+                    <div id="feature-content" class="bg-slate-50 p-8 rounded-xl min-h-[250px] transition-opacity duration-300">
+                        <div id="filter-content" class="feature-content-item">
+                            <h4 class="text-2xl font-bold text-blue-600 mb-3">關鍵字 & 媒體來源過濾</h4>
+                            <p class="text-slate-600">這是最核心的功能。您可以輕鬆建立自己的「黑名單」，將不信任的媒體、不想看的議題（如政治口水、娛樂八卦）或特定關鍵字排除在日常瀏覽之外。系統更可智慧推薦關聯詞，讓過濾更全面。</p>
+                        </div>
+                        <div id="platform-content" class="feature-content-item hidden">
+                            <h4 class="text-2xl font-bold text-blue-600 mb-3">瀏覽器 & App 雙平台覆蓋</h4>
+                            <p class="text-slate-600">無論是在電腦前深度工作，或是在手機上碎片化閱讀，我們的服務都能提供無縫的保護。瀏覽器插件與手機App將全面覆蓋您主要的資訊獲取場景，確保一致的清靜體驗。</p>
+                        </div>
+                        <div id="report-content" class="feature-content-item hidden">
+                            <h4 class="text-2xl font-bold text-blue-600 mb-3">被過濾消息之智慧報告</h4>
+                            <p class="text-slate-600">這是我們的創新亮點。它像一位數位秘書，每日為您整理被過濾的資訊摘要。透過關鍵字雲、來源排行，甚至是重大事件提示，讓您快速判斷是否有重要事項被錯過，完美平衡專注與廣度。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="py-16 md:py-24 fade-in">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl md:text-4xl font-bold">市場比較分析</h3>
+                    <p class="mt-3 text-slate-500 max-w-2xl mx-auto">現有工具各有專長，但我們的專案整合了各方優點，並補足了市場缺口。下方的雷達圖清晰地展示了我們在各個維度上的獨特優勢。</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="competitorChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="bg-white py-16 md:py-24 fade-in">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl md:text-4xl font-bold">發展藍圖</h3>
+                    <p class="mt-3 text-slate-500 max-w-2xl mx-auto">我們建議從最小可行性產品（MVP）開始，分階段實現願景，並透過社群力量持續迭代。</p>
+                </div>
+                <div class="max-w-5xl mx-auto">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
+                        <div class="flex-1 flex flex-col items-center text-center p-4">
+                            <div class="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold shadow-lg">1</div>
+                            <h4 class="font-bold text-lg my-3">打造瀏覽器插件 MVP</h4>
+                            <p class="text-slate-600">首先專注於核心功能：關鍵字與媒體來源域名過濾，快速驗證市場需求。</p>
+                        </div>
+                        <div class="flex-1 w-full border-t-4 border-blue-200 border-dotted md:border-t-4 md:w-auto"></div>
+                        <div class="flex-1 flex flex-col items-center text-center p-4">
+                            <div class="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold shadow-lg">2</div>
+                            <h4 class="font-bold text-lg my-3">強化核心亮點</h4>
+                            <p class="text-slate-600">加入初版的「每日過濾報告」，讓使用者體驗產品的獨特價值，並收集回饋。</p>
+                        </div>
+                         <div class="flex-1 w-full border-t-4 border-blue-200 border-dotted md:border-t-4 md:w-auto"></div>
+                        <div class="flex-1 flex flex-col items-center text-center p-4">
+                            <div class="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold shadow-lg">3</div>
+                            <h4 class="font-bold text-lg my-3">驅動社群成長</h4>
+                            <p class="text-slate-600">開放讓使用者分享、訂閱「過濾規則包」，建立生態系，增加產品的黏性與實用性。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2025 智慧資訊過濾器專案願景</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const competitorChartCtx = document.getElementById('competitorChart').getContext('2d');
+            const competitorChart = new Chart(competitorChartCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['跨平台通用性', '內容語意過濾', '智慧回饋報告', '廣告攔截能力', '新聞來源策展'],
+                    datasets: [{
+                        label: '您的專案',
+                        data: [9, 9, 10, 5, 8],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: '廣告攔截器',
+                        data: [7, 2, 0, 10, 3],
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 1.5
+                    }, {
+                        label: 'RSS 閱讀器',
+                        data: [3, 4, 1, 0, 10],
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        borderColor: 'rgba(245, 158, 11, 1)',
+                        pointBackgroundColor: 'rgba(245, 158, 11, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(245, 158, 11, 1)',
+                        borderWidth: 1.5
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 14,
+                                },
+                                color: '#334155'
+                            },
+                            ticks: {
+                                backdropColor: 'rgba(255, 255, 255, 0.75)',
+                                color: '#64748b',
+                                stepSize: 2
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const featureTabs = document.querySelectorAll('.feature-tab');
+            const featureContentItems = document.querySelectorAll('.feature-content-item');
+
+            featureTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    featureTabs.forEach(t => {
+                        t.classList.remove('active', 'bg-slate-100', 'text-slate-700');
+                        if (!t.classList.contains('active')) {
+                           t.classList.add('bg-slate-100', 'text-slate-700');
+                        }
+                    });
+                    tab.classList.add('active');
+                    tab.classList.remove('bg-slate-100', 'text-slate-700');
+                    
+                    const tabId = tab.dataset.tab;
+                    featureContentItems.forEach(item => {
+                        if (item.id === `${tabId}-content`) {
+                            item.classList.remove('hidden');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.5
+            };
+
+            const sectionObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const targetId = entry.target.id;
+                        navLinks.forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href') === `#${targetId}`);
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                sectionObserver.observe(section);
+            });
+
+            navLinks.forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            const fadeElements = document.querySelectorAll('.fade-in');
+            const fadeObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            fadeElements.forEach(el => {
+                fadeObserver.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
