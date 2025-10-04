@@ -8,13 +8,12 @@
 
 ## 專案當前狀態
 
-- **版本控制:** 所有變更已提交 (Commit hash: 4b4c1e1)。工作目錄乾淨。
+- **版本控制:** 程式碼已更新，準備提交。
+- **主要變更:** 
+    1. 移除了 `girl.html` 及其在 `metadata.json` 中的紀錄。
+    2. 建立了共用的前端 API 客戶端 `public/js/api-client.js`，用於呼叫後端 Gemini API 代理。
+    3. 後端代理 API (`/api/proxy/*`) 保持不變，以供未來的 HTML 檔案使用。
 - **部署狀態:** 專案已準備好推送到 GitHub。Zeabur 會自動根據 `package.json` 的 `start` 指令 (`node server.js`) 進行部署。
-- **開發流程:** 
-    1. 在本機進行修改。
-    2. 透過 `npm start` 在 `http://localhost:3000` 進行測試。
-    3. 完成後，將程式碼 `git push` 到 GitHub。
-    4. Zeabur 會自動完成後續的部署工作。
 
 ---
 
@@ -24,49 +23,49 @@
 
 ### 檔案結構
 
-為了安全性，專案檔案已重構並區分前端與後端。
-
 - `/public`: **唯一對外公開的資料夾**。
     - `index.html`: 專案主入口頁面。
     - `/show/...`: 所有動態連結的 HTML 專案頁面都存放在此。
+    - `/js/api-client.js`: **(新功能)** 用於呼叫後端 Gemini API 代理的共用 JavaScript 函式庫。
 - `server.js`: 後端伺服器主程式，處理 API 請求與檔案服務。
-- `metadata.json`: **專案描述的中央資料庫**。儲存 `/show` 目錄下所有 HTML 檔案的名稱、描述與標籤。
+- `metadata.json`: **專案描述的中央資料庫**。
 - `package.json`: Node.js 專案定義檔。
 - `GEMINI.MD`: **本工作日誌**。
 
 ### 後端 (server.js)
 
-- 使用 **Express** 框架。
 - **靜態服務:** 只將 `public` 資料夾作為靜態資源目錄對外提供服務。
-- **API (`/api/projects`):** 
-    1. 伺服器啟動時，會先讀取 `metadata.json` 的內容到記憶體中。
-    2. 當前端請求此 API 時，後端會讀取 `public/show` 資料夾的實際檔案列表。
-    3. 結合檔案列表與記憶體中的元數據，動態生成最終的專案列表 JSON 回應給前端。
-
-### 前端 (index.html)
-
-- 頁面載入後，會自動向後端的 `/api/projects` 發出請求。
-- 根據收到的 JSON 數據，動態在「Projects Hub」區塊生成所有專案的連結。
+- **專案列表 API (`/api/projects`):** 動態列出 `public/show` 中的專案並結合 `metadata.json` 的內容。
+- **Gemini 代理 API (`/api/proxy/*`):** 提供 `/image`, `/text`, `/tts` 三個路由，安全地將前端請求轉發至 Google API，API Key 儲存在伺服器環境變數中。
 
 ---
 
 ## 主要功能
 
-1.  **動態專案連結:** 主頁能自動偵測 `public/show` 資料夾中的所有 `.html` 檔案，並生成連結，無需手動修改主頁程式碼。
-2.  **集中化元數據管理:** 所有專案的顯示名稱、描述和標籤都統一在 `metadata.json` 中管理，方便維護，且與程式碼邏輯分離。
-3.  **安全的檔案結構:** 透過 `public` 資料夾隔離了前端與後端，防止 `server.js`、`package.json` 等敏感檔案被外部直接存取。
+1.  **動態專案連結:** 主頁能自動偵測 `public/show` 資料夾中的所有 `.html` 檔案，並生成連結。
+2.  **集中化元數據管理:** 所有專案的顯示名稱、描述和標籤都統一在 `metadata.json` 中管理。
+3.  **安全的 API 呼叫:** 透過後端代理模式，保護 API Key 不會在前端洩漏。
+4.  **可重用的 API 客戶端:** 提供 `api-client.js`，讓任何 HTML 頁面都能輕鬆、安全地使用 Gemini API 功能。
 
 ---
 
 ## 注意事項與未來任務
 
-1.  **如何更新專案描述:**
-    - 當您在 `public/show` 中新增或刪除 HTML 檔案後，`server.js` 會自動偵測到檔案變化，但**不會自動更新描述**。
-    - 您需要手動編輯 `metadata.json` 檔案來新增、修改或刪除對應專案的資訊。如果需要 AI 輔助產生描述，可以請求 Gemini Agent (我) 執行掃描與更新。
+1.  **如何在新的 HTML 檔案中使用 Gemini API:**
+    - 在您的新 HTML 檔案中，於 `</body>` 標籤前引入共用函式庫：
+      ```html
+      <script src="/js/api-client.js"></script>
+      ```
+    - 引入後，您就可以在自己的 `<script>` 標籤中直接呼叫以下三個 `async` 函式：
+      - `callImageGenerationAPI(prompt, model)`
+      - `callTextGenerationAPI(prompt)`
+      - `callTTSAPI(text)`
 
-2.  **[安全警告] API 金鑰:**
-    - 在分析 `show/` 目錄下的 HTML 檔案時，發現部分檔案 (如 `girl.html`, `TKVv0_old.html`) 的 JavaScript 程式碼中可能**包含寫死的 API Key**。
-    - 這在正式專案中是高風險操作。未來建議將這些 Key 移至後端作為環境變數，並由後端提供代理 API 來呼叫，避免金鑰在前端洩漏。
+2.  **如何更新專案描述:**
+    - 當您在 `public/show` 中新增 HTML 檔案後，請記得手動編輯 `metadata.json` 檔案，為新專案加入對應的名稱、描述與標籤。
 
-3.  **維護此文件:**
+3.  **[安全警告] API 金鑰:**
+    - 專案中仍有 `TKVv0_old.html` 檔案包含舊的 API Key 邏輯，雖然目前未使用，但未來若要重新啟用，建議比照 `api-client.js` 的模式進行重構。
+
+4.  **維護此文件:**
     - **請在每次修改專案後，記得更新此文件**，以利團隊協作和未來維護。
