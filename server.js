@@ -3,6 +3,10 @@ import fs from 'fs/promises';
 import path from 'path';
 import cors from 'cors'; 
 import { fileURLToPath } from 'url';
+import 'dotenv/config'; // 載入 .env 檔案中的環境變數
+import fetch from 'node-fetch'; // 用於在後端發送請求
+
+// 設置 __dirname
 
 // 設置 __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -18,7 +22,7 @@ app.use(express.static(PUBLIC_DIR));
 // 更新 PROJECTS_DIR 以指向 public/show
 const PROJECTS_DIR = path.join(PUBLIC_DIR, 'show');
 
-const METADATA_PATH = path.join(__dirname, '..', 'metadata.json');
+const METADATA_PATH = path.join(__dirname, 'metadata.json');
 let projectMetadata = {};
 
 // --- 輔助函式：在伺服器啟動時讀取元數據 ---
@@ -66,6 +70,94 @@ app.get('/api/projects', async (req, res) => {
         res.status(500).json({ error: '掃描專案目錄失敗' });
     }
 });
+
+// --- API 代理路由 ---
+
+// 圖片生成代理
+app.post('/api/proxy/image', async (req, res) => {
+    const { prompt, model } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+        return res.status(500).json({ error: '伺服器未設定 API 金鑰' });
+    }
+
+    let apiUrl, payload;
+    if (model === 'imagen-3') {
+        apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+        const [p, np] = prompt.split("Negative prompt:");
+        payload = {
+            instances: [{ prompt: p.trim(), negative_prompt: (np || "").trim() }],
+            parameters: { "sampleCount": 1 }
+        };
+    } else {
+        apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`;
+        payload = {
+            contents: [{ parts: [{ text: prompt.split("Negative prompt:")[0].trim() }] }],
+            generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+        };
+    }
+
+    try {
+        const apiResponse = await fetch(apiUrl, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(payload) 
+        });
+        const data = await apiResponse.json();
+        if (!apiResponse.ok) {
+            console.error("Google API Error:", data);
+            throw new Error(data.error?.message || 'Google API 請求失敗');
+        }
+        res.json(data);
+    } catch (error) {
+        console.error('圖片生成代理錯誤:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 文字生成代理
+app.post('/api/proxy/text', async (req, res) => {
+    const { prompt } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: '伺服器未設定 API 金鑰' });
+
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+
+    try {
+        const apiResponse = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await apiResponse.json();
+        if (!apiResponse.ok) throw new Error(data.error?.message || 'Google API 請求失敗');
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// TTS 代理
+app.post('/api/proxy/tts', async (req, res) => {
+    const { text } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: '伺服器未設定 API 金鑰' });
+
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+    const payload = {
+        contents: [{ parts: [{ text: `請用溫柔、富有磁性的年輕女性聲音朗讀以下內容：${text}` }] }],
+        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Zubenelgenubi" } } } },
+        model: "gemini-2.5-flash-preview-tts"
+    };
+
+    try {
+        const apiResponse = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await apiResponse.json();
+        if (!apiResponse.ok) throw new Error(data.error?.message || 'Google API 請求失敗');
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 // 啟動伺服器並預先載入元數據
 app.listen(PORT, async () => {

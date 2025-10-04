@@ -544,7 +544,7 @@
         // --- Global Scope & Constants ---
         // WARNING: Do not expose your API key in client-side code in a real application.
         // This should be handled by a backend server to keep it secure.
-        const apiKey = "AIzaSyCOFOoppNQRakvBcKyKmWHEHpMBPODi9s4";//"AIzaSyBasaBU3srwcOqVQoyT7uZmtXPa4NRi6gU"; // 為了安全，請將您的 API 金鑰移至後端處理
+        // const apiKey = "AIzaSy..." // 已移除，改用後端代理
         const styles = [
             { id: 'beach-silhouette', title: '🏖️ 沙灘剪影', description: '黃昏、唯美、充滿想像的浪漫詩篇', prompt: "A beautiful Asian model as a silhouette against a sunset on a deserted beach. She wears a light, semi-transparent white dress. The mood is romantic and beautiful." },
             { id: 'morning-lazy', title: '☀️ 晨光私房', description: '慵懶、私密、屬於你的女友感瞬間', prompt: "A sexy and curvy Asian model with a lazy aura on a messy bed. She wears an oversized men's shirt, unbuttoned, with black stockings. Morning sun streams through blinds, creating a soft, intimate, and seductive atmosphere." },
@@ -1020,35 +1020,18 @@
         }
 
         async function callImageGenerationAPI(userPrompt) {
-            if (apiKey === "") {
-                console.warn("正在使用佔位圖片。請替換 API 金鑰並實作安全的後端呼叫。");
-                await new Promise(res => setTimeout(res, 1000)); // 模擬網路延遲
-                return `https://placehold.co/400x600/2d3748/e2e8f0?text=${encodeURIComponent(userPrompt.slice(0,20))}`;
-            }
-
             const selectedModel = document.getElementById('model-select').value;
-            let apiUrl, payload;
+            const response = await fetch('/api/proxy/image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: userPrompt, model: selectedModel })
+            });
 
-            if (selectedModel === 'imagen-3') {
-                apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
-                const [prompt, negative_prompt] = userPrompt.split("Negative prompt:");
-                payload = {
-                    instances: [{ prompt: prompt.trim(), negative_prompt: (negative_prompt || "").trim() }],
-                    parameters: { "sampleCount": 1 }
-                };
-            } else { 
-                apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`;
-                const cleanedPrompt = userPrompt.split("Negative prompt:")[0].trim();
-                payload = {
-                    contents: [{ parts: [{ text: cleanedPrompt }] }],
-                    generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
-                };
-            }
-
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) throw new Error(`API 請求失敗，狀態碼：${response.status}. 回應: ${await response.text()}`);
             const result = await response.json();
-            if (Object.keys(result).length === 0) throw new Error('API 回應了一個空物件');
+            if (!response.ok) {
+                console.error("代理錯誤:", result.error);
+                throw new Error(result.error || '圖片生成代理請求失敗');
+            }
             
             let base64Data;
             if (selectedModel === 'imagen-3') base64Data = result.predictions?.[0]?.bytesBase64Encoded;
@@ -1062,30 +1045,26 @@
         }
 
         async function callTextGenerationAPI(prompt) {
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) throw new Error(`文字 API 請求失敗: ${response.status}`);
+            const response = await fetch('/api/proxy/text', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ prompt })
+            });
             const result = await response.json();
+            if (!response.ok) throw new Error(result.error || '文字代理請求失敗');
             if (result.candidates && result.candidates.length > 0) return result.candidates[0].content.parts[0].text;
             else throw new Error('文字 API 未返回有效的內容。');
         }
 
         async function callTTSAPI(text) {
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{ parts: [{ text: `請用溫柔、富有磁性的年輕女性聲音朗讀以下內容：${text}` }] }],
-                generationConfig: {
-                    responseModalities: ["AUDIO"],
-                    speechConfig: {
-                        voiceConfig: { prebuiltVoiceConfig: { voiceName: "Zubenelgenubi" } }
-                    }
-                },
-                model: "gemini-2.5-flash-preview-tts"
-            };
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) throw new Error(`TTS API 請求失敗: ${response.status}`);
+            const response = await fetch('/api/proxy/tts', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ text })
+            });
             const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'TTS 代理請求失敗');
+
             const part = result?.candidates?.[0]?.content?.parts?.[0];
             if (part?.inlineData?.data && part?.inlineData?.mimeType.startsWith("audio/")) {
                 return {
