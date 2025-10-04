@@ -1,0 +1,14 @@
+{
+  "name": "project-hub-backend",
+  "version": "1.0.0",
+  "description": "API to dynamically list project files from the /show directory.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}

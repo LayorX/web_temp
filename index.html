@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>晝夜協奏曲 | 一個可切換的互動世界</title>
+    <title>晝夜協奏曲 | 一個可切換的互動世界與專案中心</title>
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="一個可以在賽博龐克的霓虹雨夜與溫柔的日光夢境之間自由切換的互動式個人網站。">
-    <meta name="keywords" content="網頁設計, 前端開發, 互動設計, 雙主題, 日夜切換, 賽博龐克, 生活美學, 天氣模擬">
+    <meta name="description" content="一個可以在賽博龐克的霓虹雨夜與溫柔的日光夢境之間自由切換的互動式個人網站。包含動態天氣與專案連結中心。">
+    <meta name="keywords" content="網頁設計, 前端開發, 互動設計, 雙主題, 日夜切換, 賽博龐克, 生活美學, 天氣模擬, 專案集">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,39 +27,39 @@
             --font-sans: 'Inter', 'Noto Sans TC', sans-serif;
             --font-serif: 'Playfair Display', serif;
 
-            /* 夜晚主題 (預設) */
+            /* 夜晚主題 (預設) - 賽博龐克 */
             --bg-primary: #0f0c29;
             --bg-gradient: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1d194d);
             --text-primary: #e5e7eb;
             --text-secondary: #9ca3af;
-            --text-glow: #ec4899;
-            --card-bg: rgba(23, 23, 33, 0.6);
-            --card-border: rgba(255, 255, 255, 0.1);
-            --card-hover-border: #ec4899;
-            --button-bg: #8b5cf6;
-            --button-shadow-1: rgba(168, 85, 247, 0.9);
-            --button-shadow-2: rgba(168, 85, 247, 0.7);
+            --text-glow: #ff00ff; /* 霓虹紫紅 */
+            --card-bg: rgba(23, 23, 33, 0.75);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --card-hover-border: #ff00ff;
+            --button-bg: #ff00ff;
+            --button-shadow-1: rgba(255, 0, 255, 0.6);
+            --button-shadow-2: rgba(255, 0, 255, 0.4);
             --icon-color: #a78bfa;
-            --scrollbar-thumb: #4f46e5;
+            --scrollbar-thumb: #ff00ff;
             --scrollbar-track: #111827;
             --rain-color: rgba(170, 200, 255, 0.6);
         }
 
         body.theme-day {
-            /* 白天主題 */
+            /* 白天主題 - 溫暖極簡 */
             --bg-primary: #fdfbfb;
             --bg-gradient: linear-gradient(-45deg, #fdfbfb, #ebedee, #f5f7fa, #fdfbfb);
             --text-primary: #374151;
             --text-secondary: #6b7280;
-            --text-glow: #8a6d5c;
+            --text-glow: #8a6d5c; /* 溫暖陶土色 */
             --card-bg: rgba(255, 255, 255, 0.85);
-            --card-border: rgba(0, 0, 0, 0.05);
-            --card-hover-border: #c5a896;
+            --card-border: rgba(0, 0, 0, 0.08);
+            --card-hover-border: #8a6d5c;
             --button-bg: #8a6d5c;
-            --button-shadow-1: rgba(197, 168, 150, 0.5);
-            --button-shadow-2: rgba(197, 168, 150, 0.3);
+            --button-shadow-1: rgba(138, 109, 92, 0.5);
+            --button-shadow-2: rgba(138, 109, 92, 0.3);
             --icon-color: #8a6d5c;
-            --scrollbar-thumb: #c5a896;
+            --scrollbar-thumb: #8a6d5c;
             --scrollbar-track: #f1f5f9;
         }
 
@@ -75,7 +75,8 @@
             background-size: 400% 400%;
             transition: background-color 0.8s ease, color 0.8s ease;
             animation: gradient-animation 25s ease infinite;
-            overflow-x: hidden; /* 防止光束動畫產生滾動條 */
+            overflow-x: hidden;
+            min-height: 100vh;
         }
 
         @keyframes gradient-animation {
@@ -85,7 +86,7 @@
         }
 
         * {
-            transition: background-color 0.8s ease, color 0.8s ease, border-color 0.8s ease, box-shadow 0.8s ease;
+            transition: background-color 0.8s ease, color 0.8s ease, border-color 0.8s ease, box-shadow 0.8s ease, transform 0.4s ease;
         }
 
         h1, h2, h3, .font-serif {
@@ -93,47 +94,25 @@
         }
 
         /* * ===============================================
-         * 3. 新增：天氣效果
+         * 3. 天氣與光束效果
          * ===============================================
         */
         #weather-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1; opacity: 0;
             transition: opacity 0.8s ease;
         }
-        body:not(.theme-day) #weather-canvas {
-            opacity: 1;
-        }
-
+        body:not(.theme-day) #weather-canvas { opacity: 1; }
         body.theme-day::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
+            content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
             background: radial-gradient(circle at center, rgba(255, 255, 220, 0.15) 0%, rgba(255, 255, 220, 0) 40%);
-            z-index: 1;
-            pointer-events: none;
-            animation: sunbeam-move 60s linear infinite;
-            opacity: 1;
-            transition: opacity 0.8s ease;
+            z-index: 1; pointer-events: none; animation: sunbeam-move 60s linear infinite;
+            opacity: 1; transition: opacity 0.8s ease;
         }
-        body:not(.theme-day)::before {
-            opacity: 0;
-        }
-
+        body:not(.theme-day)::before { opacity: 0; }
         @keyframes sunbeam-move {
             0% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(10vw, 5vh) rotate(5deg); }
-            50% { transform: translate(5vw, 15vh) rotate(-5deg); }
-            75% { transform: translate(-5vw, 10vh) rotate(0deg); }
+            50% { transform: translate(10vw, 15vh) rotate(-10deg); }
             100% { transform: translate(0, 0) rotate(0deg); }
         }
 
@@ -141,36 +120,52 @@
          * 4. 元件樣式 (使用 CSS 變數)
          * ===============================================
         */
-        .main-container {
-            position: relative;
-            z-index: 10;
-        }
+        .main-container { position: relative; z-index: 10; padding-top: 5rem; padding-bottom: 5rem; }
         .themed-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--card-border);
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); border: 1px solid var(--card-border);
             transition: all 0.4s ease;
         }
         .themed-card:hover {
-            transform: translateY(-8px);
-            border-color: var(--card-hover-border);
-            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1);
+            transform: translateY(-8px); border-color: var(--card-hover-border);
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.15);
         }
-        .themed-title {
-            color: var(--text-primary);
-            text-shadow: 0 0 8px var(--text-glow);
-        }
+        .themed-title { color: var(--text-primary); text-shadow: 0 0 10px var(--text-glow); }
         .themed-subtitle { color: var(--text-secondary); }
         .themed-button {
-            background-color: var(--button-bg);
-            color: white;
-            box-shadow: 0 0 5px var(--button-shadow-1), 0 0 15px var(--button-shadow-2);
+            background-color: var(--button-bg); color: var(--bg-primary);
+            box-shadow: 0 0 8px var(--button-shadow-1), 0 0 20px var(--button-shadow-2);
+            font-weight: 700;
         }
         .themed-button:hover {
-             box-shadow: 0 0 10px var(--text-glow), 0 0 25px var(--text-glow);
+             box-shadow: 0 0 12px var(--text-glow), 0 0 30px var(--text-glow);
+             transform: scale(1.05);
         }
         .themed-icon { color: var(--icon-color); }
+        
+        /* Projects Hub 連結列表樣式 (優化版) */
+        .project-link-item {
+            /* 基礎樣式繼承 themed-card 的邊界 */
+            display: block;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.03); /* 夜晚微光，更低調 */
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        body.theme-day .project-link-item {
+            background: rgba(0, 0, 0, 0.05); /* 白天陰影，略微可見 */
+        }
+        .project-link-item:hover {
+            background: rgba(var(--card-hover-border-rgb), 0.1); /* 使用主題色變體 */
+            box-shadow: 0 0 8px rgba(var(--card-hover-border-rgb), 0.5);
+            transform: translateY(-2px);
+        }
+        /* 定義 RGB 變數，以便在透明背景中使用 */
+        :root { --card-hover-border-rgb: 255, 0, 255; } /* 霓虹紫紅 */
+        body.theme-day { --card-hover-border-rgb: 138, 109, 92; } /* 溫暖陶土色 */
+
+        /* 滾動條 */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
         ::-webkit-scrollbar-thumb {
@@ -179,10 +174,7 @@
             border: 2px solid var(--scrollbar-track);
         }
 
-        /* * ===============================================
-         * 5. 初始載入畫面與提示視窗
-         * ===============================================
-        */
+        /* 初始載入與提示視窗 */
         #entry-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--bg-primary); z-index: 2000;
@@ -199,11 +191,10 @@
         #custom-modal.visible { opacity: 1; pointer-events: auto; }
         .modal-content {
             padding: 2rem; border-radius: 1rem; text-align: center;
-            max-width: 90vw; width: 500px;
+            max-width: 90vw; width: 550px; /* 略微加大 Projects Hub 寬度 */
         }
         #modal-text {
-            min-height: 5em; /* 預留空間防止跳動 */
-            text-align: left; white-space: pre-wrap;
+            min-height: 5em; text-align: left; /* 保持預設高度 */
         }
         #theme-toggle-button {
             position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 1000;
@@ -220,27 +211,28 @@
     <!-- 初始載入畫面 -->
     <div id="entry-overlay">
         <h1 class="text-4xl md:text-6xl font-black uppercase tracking-widest themed-title mb-8">晝夜協奏曲</h1>
-        <button id="entry-button" class="px-8 py-3 rounded-full font-bold themed-button text-lg">進入世界</button>
+        <button id="entry-button" class="px-8 py-3 rounded-full font-bold themed-button text-lg">啟動感官</button>
     </div>
 
-    <!-- 提示視窗 -->
+    <!-- 提示視窗 (Projects Hub 內容也會在這裡顯示) -->
     <div id="custom-modal">
         <div class="modal-content themed-card">
             <h3 id="modal-title" class="text-2xl font-bold mb-4 font-serif"></h3>
-            <p id="modal-text" class="text-left mb-6"></p>
+            <!-- modal-text 變為容器，內容將被動態填充 -->
+            <div id="modal-text" class="text-left mb-6"></div>
             <button id="modal-close-button" class="px-6 py-2 rounded-full font-bold themed-button">關閉</button>
         </div>
     </div>
 
-    <!-- 音樂播放器 -->
+    <!-- 音樂播放器 (由於 Canvas 限制，無法實際播放，但架構保留) -->
     <audio id="night-music" loop preload="metadata" src="https://ia800809.us.archive.org/21/items/synthwave-music-pack/Synthwave%20Music%20Pack/Retrowave.mp3"></audio>
     <audio id="day-music" loop preload="metadata" src="https://ia800504.us.archive.org/3/items/AcousticFolkInstrumental_201804/Acoustic%20Folk%20Instrumental.mp3"></audio>
 
     <!-- 主容器 -->
-    <div class="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 main-container">
+    <div class="min-h-screen w-full flex flex-col items-center justify-start p-4 sm:p-6 lg:p-8 main-container">
         <header class="w-full max-w-6xl mx-auto mb-12 text-center">
-            <h1 id="main-title" class="text-4xl md:text-6xl font-black uppercase tracking-widest themed-title">NIGHTFALL</h1>
-            <p id="main-subtitle" class="themed-subtitle mt-2 text-sm md:text-base">在光影與雨滴之間，探索無限可能。</p>
+            <h1 id="main-title" class="text-5xl md:text-7xl font-black uppercase tracking-widest themed-title">NIGHTFALL</h1>
+            <p id="main-subtitle" class="themed-subtitle mt-4 text-md md:text-lg max-w-2xl mx-auto">霓虹的低語，雨幕中的靈魂，一個屬於未來與過去交錯的數位城市。</p>
         </header>
 
         <main id="main-content" class="w-full max-w-6xl mx-auto flex-grow">
@@ -252,28 +244,28 @@
             </div>
         </main>
 
-        <footer class="w-full max-w-6xl mx-auto mt-12 pt-8 border-t border-gray-700/50">
+        <footer class="w-full max-w-6xl mx-auto mt-16 pt-8 border-t border-gray-700/50">
             <div class="text-center">
-                <p class="themed-subtitle text-sm">&copy; 2024 LayorX. 一個不斷變化的世界。</p>
+                <p class="themed-subtitle text-sm">&copy; 2024 Digital Nomad. 這是一個持續建構中的互動宇宙。</p>
             </div>
         </footer>
     </div>
 
     <!-- 主題切換按鈕 -->
-    <button id="theme-toggle-button" class="w-16 h-16 rounded-full shadow-lg flex items-center justify-center transition-transform duration-300 hover:scale-110" aria-label="切換日夜主題">
+    <button id="theme-toggle-button" class="w-16 h-16 rounded-full shadow-xl flex items-center justify-center transition-all duration-500 hover:scale-110" aria-label="切換日夜主題">
         <svg id="moon-icon" class="w-8 h-8 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         <svg id="sun-icon" class="w-8 h-8 themed-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
     </button>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- 1. 獲取所有需要的 DOM 元素 ---
+        // --- 1. 獲取所有需要的 DOM 元素與全域變數 ---
         const body = document.body;
         const entryOverlay = document.getElementById('entry-overlay');
         const entryButton = document.getElementById('entry-button');
         const customModal = document.getElementById('custom-modal');
         const modalTitle = document.getElementById('modal-title');
-        const modalText = document.getElementById('modal-text');
+        const modalTextContainer = document.getElementById('modal-text');
         const modalCloseButton = document.getElementById('modal-close-button');
         const themeToggleButton = document.getElementById('theme-toggle-button');
         const sunIcon = document.getElementById('sun-icon');
@@ -284,6 +276,8 @@
         const mainSubtitle = document.getElementById('main-subtitle');
         const mainContent = document.getElementById('main-content');
         
+        // 移除靜態 PROJECT_FILES 陣列
+
         // --- 2. 天氣效果相關 ---
         const canvas = document.getElementById('weather-canvas');
         const ctx = canvas.getContext('2d');
@@ -311,6 +305,7 @@
 
         function drawRain() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // 確保顏色變數在主題切換時能即時更新
             ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--rain-color').trim();
             ctx.lineWidth = 1;
             ctx.lineCap = 'round';
@@ -334,6 +329,7 @@
         }
 
         function startRain() {
+            if (body.classList.contains('theme-day')) return; // 白天不啟動下雨
             createRaindrops();
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             function animate() {
@@ -351,51 +347,148 @@
             }
         }
 
-        // --- 3. 定義兩個主題的內容資料 (已充實) ---
+        // --- 3. 專案中心 (Projects Hub) 內容生成與動態載入 ---
+        
+        // 【重要】請將此 URL 替換為您在 Zeabur 上部署的 Node.js 服務的實際網址。
+        // 範例: https://your-service-name.zeabur.app/api/projects
+        // 在本地開發時，通常是: http://localhost:3000/api/projects
+        const BACKEND_API_URL = "/api/projects";
+        // const BACKEND_API_URL = "http://localhost:3000/api/projects";
+        
+        // 備用數據 (當 API 呼叫失敗時使用，確保應用程式不會崩潰)
+        const FALLBACK_PROJECT_FILES = [
+            { name: "時間膠囊聊天室 (備用)", filename: "chat-capsule.html", desc: "【備用數據】一個具備時間戳記的即時通訊應用。", tags: ["Mock", "Fallback"] },
+            { name: "反應堆小遊戲 (備用)", filename: "reactor-game.html", desc: "【備用數據】基於速度與反射力的極簡主義小遊戲。", tags: ["Mock", "Fallback"] },
+            { name: "3D星球生成器 (備用)", filename: "three-planet.html", desc: "【備用數據】使用 Three.js 製作的互動式 3D 體驗。", tags: ["Mock", "Fallback"] },
+        ];
+
+
+        /**
+         * 從遠端伺服器動態獲取專案檔案列表。
+         * @returns {Promise<Array>} 專案列表
+         */
+        async function fetchProjectFiles() {
+            try {
+                // 嘗試從實際的後端 API 獲取數據
+                const response = await fetch(BACKEND_API_URL);
+                
+                if (!response.ok) {
+                    console.error(`API response failed: ${response.statusText}. Using fallback data.`);
+                    // 模擬載入時間，然後返回備用數據
+                    await new Promise(resolve => setTimeout(resolve, 500)); 
+                    return FALLBACK_PROJECT_FILES;
+                }
+
+                return await response.json();
+
+            } catch (error) {
+                console.error("Failed to fetch from API. Using fallback data.", error);
+                // 模擬載入時間，然後返回備用數據
+                await new Promise(resolve => setTimeout(resolve, 500)); 
+                return FALLBACK_PROJECT_FILES;
+            }
+        }
+
+        /**
+         * 異步生成專案連結列表的 HTML 字串，並處理載入狀態。
+         * @returns {Promise<string>} HTML content
+         */
+        async function loadProjectsHubContent() {
+            try {
+                const PROJECT_FILES = await fetchProjectFiles();
+
+                if (PROJECT_FILES.length === 0) {
+                    return '<p class="themed-subtitle text-lg p-4">系統探測：目前在目錄中未發現任何活動專案。</p>';
+                }
+
+                const isDay = body.classList.contains('theme-day');
+                // 根據主題調整標題顏色，使用 Tailwind 類別
+                const glowClass = isDay ? 'text-stone-700' : 'text-pink-400';
+                const tagColorClass = isDay ? 'border-gray-400 text-gray-700' : 'border-gray-500 text-gray-300';
+
+
+                // 使用更豐富的樣式和標籤
+                const projectListHtml = PROJECT_FILES.map(p => {
+                    const tagsHtml = (p.tags || []).map(tag => 
+                        `<span class="text-xs font-medium px-2 py-0.5 rounded-full themed-subtitle opacity-70 border ${tagColorClass} mr-2">${tag}</span>`
+                    ).join('');
+
+                    return `
+                        <a href="./show/${p.filename}" target="_blank" class="project-link-item block hover:shadow-xl transition-all duration-300 p-4 border-l-4 border-[var(--card-hover-border)]">
+                            <div class="flex justify-between items-start">
+                                <p class="font-bold text-lg mb-1 ${glowClass}">${p.name}</p>
+                                <!-- 連結圖標 -->
+                                <svg class="w-6 h-6 themed-icon opacity-80 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </div>
+                            <p class="text-sm themed-subtitle mb-2">${p.desc}</p>
+                            <div class="mt-2 flex flex-wrap">
+                                ${tagsHtml}
+                            </div>
+                        </a>
+                    `;
+                }).join('');
+
+                return `
+                    <p class="themed-subtitle text-sm mb-4">檔案庫掃描結果 (${PROJECT_FILES.length} 個項目):</p>
+                    <div class="space-y-4 max-h-96 overflow-y-auto p-1 pr-3">
+                        ${projectListHtml}
+                    </div>
+                    <p class="themed-subtitle mt-6 text-xs text-center opacity-70 border-t pt-4 border-[var(--card-border)]">點擊連結將在新分頁開啟專案。動態掃描已完成。</p>
+                `;
+            } catch (error) {
+                console.error("Failed to render project files:", error);
+                return '<p class="text-red-500 text-lg p-4">載入失敗：無法處理專案數據。</p>';
+            }
+        }
+
+
+        // --- 4. 定義兩個主題的內容資料 (已充實) ---
         const themes = {
             night: {
-                title: 'NIGHTFALL',
-                subtitle: '在光影與雨滴之間，探索無限可能。',
+                title: 'NIGHTFALL | 賽博邊緣',
+                subtitle: '霓虹的低語，雨幕中的靈魂，一個屬於未來與過去交錯的數位城市。',
                 music: nightMusic,
                 cards: [
-                    { id: 'about', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`, title: '數位遊魂', desc: '一個遊走在程式碼與設計之間的創造者。', button: '關於我', modalContent: `你好，我是 LayorX。\n\n白天，我是一名務實的工程師，用程式碼構建穩定的數位世界；夜晚，我化身為感性的設計師，在像素與光影中追尋美學的極致。\n\n我相信科技應當有溫度，而設計是傳遞溫度的最佳媒介。` },
-                    { id: 'spotlight', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>`, title: '專案聚焦', desc: '近期投入心血打造的互動式專案。', button: '查看詳情', modalContent: `專案名稱：互動式晝夜協奏曲\n\n技術棧：HTML5, CSS3 (Tailwind), Vanilla JavaScript\n\n核心特色：\n- 利用 CSS 變數實現無縫日夜主題切換。\n- 結合 Canvas 2D 與純 CSS 實現動態天氣效果。\n- 響應式設計，確保在各裝置上都有一致的沉浸體驗。\n\n設計理念：探索如何在單一頁面中融合兩種截然不同的藝術風格，並透過互動賦予其生命力。` },
-                    { id: 'tech', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>`, title: '技術棧', desc: '我用來構建世界的工具與魔法。', button: '我的軍火庫', modalContent: `前端：\n- JavaScript (ES6+), TypeScript\n- React, Vue, Svelte\n- Tailwind CSS, SCSS\n- Three.js, D3.js, WebGL\n\n後端：\n- Node.js, Python\n- Express, FastAPI\n- PostgreSQL, MongoDB, Redis\n\n其他：\n- Figma, Git, Docker` },
-                    { id: 'toggle', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`, title: '日光私語', desc: '切換到另一個維度，一個溫柔的夢境。', button: '進入夢境' }
+                    { id: 'about', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.477 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.477-3-9s1.343-9 3-9m-9 9h9"></path></svg>`, title: '核心協議', desc: '我是這座城市的管理者，編寫著運行世界的每一行程式碼。', button: '執行指令', modalType: 'text', modalContent: `【身份證：數位遊牧者】\n\n我的主要協定圍繞著 **React/TypeScript** 與 **Node.js** 構建。專注於高性能、高可擴展性的互動式應用。\n\n我的哲學：**代碼即藝術**，但穩定性是最高優先級。` },
+                    { id: 'spotlight', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>`, title: '未來線索', desc: '一窺我正在實驗、嘗試突破技術邊界的地下實驗室。', button: '掃描藍圖', modalType: 'text', modalContent: `目前正在實驗中的技術線索：\n\n1. **WebGPU 渲染：** 探索將高性能 3D 算繪應用到下一代 Web UI 中。\n2. **AI 協作模型：** 結合 Gemini API 進行即時程式碼生成與內容優化。\n3. **無伺服器架構：** 專注於利用 Firebase 與 Cloudflare Worker 實現超低延遲應用。` },
+                    { id: 'toggle', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`, title: '溫柔訊號', desc: '疲憊時，切換到日光夢境，讓靈魂得以修復。', button: '切換主題', modalType: 'toggle' },
+                    { id: 'projects', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>`, title: 'Projects Hub', desc: '所有已發布的獨立專案與互動檔案庫。', button: '連結中心', modalType: 'projects' } // 新增專案連結卡片
                 ]
             },
             day: {
-                title: 'DAYDREAM',
-                subtitle: '陽光穿過百葉窗的縫隙，時間在此靜止。',
+                title: 'DAYDREAM | 寧靜角落',
+                subtitle: '陽光穿過百葉窗的縫隙，時間在此靜止。一個關於生活美學與創作的故事集。',
                 music: dayMusic,
                 cards: [
-                    { id: 'story', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`, title: '慵懶的午後', desc: '歡迎來到我的私密角落，一個關於美的故事集。', button: '閱讀故事', modalContent: `這是一個屬於慢時間的地方。\n\n在這裡，我用文字和相片記錄那些被日常忽略的微小美好：一杯手沖咖啡的香氣、午後陽光在書頁上投下的光斑、窗外貓咪打盹的慵懶姿態。\n\n願你也能在這裡找到片刻的寧靜。` },
-                    { id: 'photos', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`, title: '光影畫廊', desc: '每一張照片，都是一個不願醒來的夢。', button: '欣賞作品', modalContent: `畫廊功能正在精心籌備中...\n\n未來，這裡將會是一個互動式的線上展覽，您可以點擊照片，查看背後的故事和拍攝參數。敬請期待！` },
-                    { id: 'writing', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`, title: '隨筆散文', desc: '收藏那些觸動心弦的文字與設計。', button: '探索靈感', modalContent: `標題：論留白\n\n“設計中的留白，如同音樂中的休止符，它不發一語，卻勝過千言萬語。\n\n它給予元素呼吸的空間，引導視線的流動，更重要的是，它給予觀者思考和感受的餘裕。在資訊爆炸的時代，學會留白，不僅是一種設計技巧，更是一種生活的智慧。”` },
-                    { id: 'toggle', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`, title: '霓虹雨幕', desc: '切換到另一個維度，一個充滿可能性的世界。', button: '返回都市' }
+                    { id: 'story', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`, title: '浮光掠影', desc: '記錄那些轉瞬即逝的靈感、隨筆與設計思考。', button: '閱讀手札', modalType: 'text', modalContent: `標題：關於「留白」的美學\n\n“設計中的留白，如同音樂中的休止符。它不是缺乏，而是給予元素呼吸的空間，讓重點更突出。在生活中亦然，適度的放空與休息，才能讓創意更好地滋長。”` },
+                    { id: 'photos', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`, title: '感光畫廊', desc: '每一張照片都是一個定格的故事，關於光線與時間的對話。', button: '欣賞作品', modalType: 'text', modalContent: `**功能準備中...**\n\n這裡將展示我的攝影集，特別是利用自然光線捕捉日常紋理與情感的極簡主義作品。\n\n**近期主題：** 城市中的安靜角落 (Quiet Corners of the City)` },
+                    { id: 'toggle', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`, title: '都市脈動', desc: '休息夠了，回到繁忙的數位城市中繼續前進。', button: '返回雨夜', modalType: 'toggle' },
+                    { id: 'projects', icon: `<svg class="w-16 h-16 themed-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`, title: 'Projects Hub', desc: '匯集了我所有已公開的實作與練習專案。', button: '探索專案', modalType: 'projects' } // 新增專案連結卡片
                 ]
             }
         };
 
-        // --- 4. 更新頁面內容的函式 ---
+        // --- 5. 更新頁面內容的函式 ---
         function updateContent(theme) {
             mainTitle.textContent = theme.title;
             mainSubtitle.textContent = theme.subtitle;
 
             theme.cards.forEach((cardData, index) => {
                 const cardElement = document.getElementById(`card-${index + 1}`);
+                
+                // 清空卡片並重新渲染
                 cardElement.innerHTML = `
                     <div class="mb-4">${cardData.icon}</div>
                     <h2 class="text-2xl font-bold text-primary mb-2 font-serif">${cardData.title}</h2>
                     <p class="themed-subtitle text-sm flex-grow">${cardData.desc}</p>
-                    <button data-id="${cardData.id}" class="mt-4 px-6 py-2 rounded-full font-bold themed-button">
+                    <button data-id="${cardData.id}" data-type="${cardData.modalType}" class="mt-4 px-6 py-2 rounded-full themed-button">
                         ${cardData.button}
                     </button>
                 `;
             });
         }
         
-        // --- 5. 主題切換的主要邏輯 ---
+        // --- 6. 主題切換的主要邏輯 ---
         function toggleTheme() {
             body.classList.toggle('theme-day');
             const isDay = body.classList.contains('theme-day');
@@ -405,45 +498,83 @@
                 moonIcon.classList.add('hidden');
                 updateContent(themes.day);
                 nightMusic.pause();
-                dayMusic.play().catch(e => {});
+                dayMusic.play().catch(e => { console.log("Day music play failed:", e); });
                 stopRain();
             } else {
                 sunIcon.classList.add('hidden');
                 moonIcon.classList.remove('hidden');
                 updateContent(themes.night);
                 dayMusic.pause();
-                nightMusic.play().catch(e => {});
+                nightMusic.play().catch(e => { console.log("Night music play failed:", e); });
                 startRain();
             }
         }
 
-        // --- 6. 提示視窗與打字機效果 ---
+        // --- 7. 提示視窗與內容處理 ---
         let typingInterval;
-        function showModal(title, message) {
+
+        function showModal(title, content, type) {
             modalTitle.textContent = title;
-            modalText.textContent = ''; // 清空
+            modalTextContainer.innerHTML = ''; // 清空
             customModal.classList.add('visible');
 
-            let i = 0;
-            if (typingInterval) clearInterval(typingInterval);
-            typingInterval = setInterval(() => {
-                if (i < message.length) {
-                    modalText.textContent += message.charAt(i);
-                    i++;
-                } else {
-                    clearInterval(typingInterval);
-                }
-            }, 30); // 打字速度
+            if (type === 'projects') {
+                // 顯示載入動畫和訊息
+                modalTextContainer.innerHTML = `
+                    <div class="flex flex-col justify-center items-center h-48">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-r-2 border-[var(--text-glow)]"></div>
+                        <p class="mt-4 themed-subtitle text-lg">正在掃描數位邊緣，偵測活動專案...</p>
+                    </div>
+                `;
+
+                // 異步載入專案內容
+                loadProjectsHubContent().then(html => {
+                    // 確保在內容載入完成時模態框仍是開啟狀態，才更新內容
+                    if (customModal.classList.contains('visible')) {
+                        modalTextContainer.innerHTML = html;
+                    }
+                }).catch(error => {
+                    modalTextContainer.innerHTML = `<p class="text-red-500 text-lg p-4">載入失敗：${error.message}</p>`;
+                });
+
+            } else {
+                // 如果是普通文字，使用打字機效果
+                const message = content;
+                
+                // 必須先清空 interval
+                if (typingInterval) clearInterval(typingInterval);
+
+                // 為打字機效果創建一個 <p> 元素，用於顯示純文本
+                const typingP = document.createElement('p');
+                typingP.style.whiteSpace = 'pre-wrap';
+                typingP.style.minHeight = '5em'; // 保持原始最小高度
+                modalTextContainer.appendChild(typingP);
+                
+                let i = 0;
+                typingInterval = setInterval(() => {
+                    if (i < message.length) {
+                        typingP.textContent += message.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(typingInterval);
+                    }
+                }, 20); // 打字速度
+            }
         }
+
         function hideModal() {
             if (typingInterval) clearInterval(typingInterval);
             customModal.classList.remove('visible');
         }
 
-        // --- 7. 事件監聽器 ---
+        // --- 8. 事件監聽器 ---
         entryButton.addEventListener('click', () => {
             entryOverlay.classList.add('hidden');
-            nightMusic.play().catch(e => {});
+            // 嘗試播放音樂並啟動雨水
+            nightMusic.play().catch(e => {
+                // 如果自動播放失敗 (例如瀏覽器限制)，在控制台提示
+                console.log("Music auto-play prevented. User needs interaction to start audio.");
+            });
             startRain();
         }, { once: true });
 
@@ -452,14 +583,16 @@
         mainContent.addEventListener('click', (e) => {
             if (e.target.matches('.themed-button')) {
                 const cardId = e.target.dataset.id;
+                const modalType = e.target.dataset.type;
                 const isDay = body.classList.contains('theme-day');
                 const currentTheme = isDay ? themes.day : themes.night;
                 const cardData = currentTheme.cards.find(c => c.id === cardId);
 
                 if (cardId === 'toggle') {
                     toggleTheme();
-                } else if (cardData && cardData.modalContent) {
-                    showModal(cardData.title, cardData.modalContent);
+                } else if (cardData) {
+                    // Projects Hub 和普通文字使用 showModal 處理
+                    showModal(cardData.title, cardData.modalContent, modalType);
                 }
             }
         });
@@ -469,7 +602,7 @@
             if (e.target === customModal) hideModal();
         });
 
-        // --- 8. 初始化頁面 ---
+        // --- 9. 初始化頁面 ---
         updateContent(themes.night);
     });
     </script>

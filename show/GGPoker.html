@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GGPoker 手牌分析工具指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application uses a tabbed navigation structure (Paid, Free, Open-Source) to segment tools by user intent and budget. This is more intuitive than a long scrolling list. The core interaction is switching between these tabs to reveal curated lists of tools presented in a consistent card format for easy comparison. An interactive bar chart in the "Paid" section allows for direct, dynamic comparison on key metrics, helping users make informed decisions. This structure was chosen to guide the user from broad categories to specific details and finally to a direct comparison, facilitating a clear decision-making process. -->
+    <!-- Visualization & Content Choices: 
+        1. Report Info: Comparison of paid poker tools. -> Goal: Compare. -> Viz/Presentation: Interactive Bar Chart (Chart.js). -> Interaction: User selects a metric (Features, Ease of Use, Price) from a dropdown, and the chart updates to show scores for each tool. -> Justification: A dynamic bar chart is more engaging and allows for a multi-faceted comparison within a single component, superior to a static table. It highlights differences visually and immediately. -> Library/Method: Chart.js/Canvas.
+        2. Report Info: Lists of tools in different categories. -> Goal: Organize/Inform. -> Viz/Presentation: Card-based layout using Tailwind CSS Grid. -> Interaction: None, purely for organized presentation. -> Justification: Cards provide a visually distinct and organized way to present information for each tool, making the lists scannable and easy to digest. -> Library/Method: HTML/CSS/Tailwind.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FDFBF8;
+            color: #4A4A4A;
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-btn.active {
+            color: #D97706;
+            border-bottom-color: #D97706;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #F3F4F6;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 tracking-tight">GGPoker 手牌分析工具指南</h1>
+            <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">探索最適合您的手牌追蹤、數據分析與策略學習工具，從免費入門到職業級別，一應俱全。</p>
+        </header>
+
+        <nav class="mb-10 flex justify-center border-b border-gray-200">
+            <button class="tab-btn active text-lg font-medium py-3 px-6 text-gray-600 hover:text-amber-700" data-tab="paid">付費專業工具</button>
+            <button class="tab-btn text-lg font-medium py-3 px-6 text-gray-600 hover:text-amber-700" data-tab="free">免費入門工具</button>
+            <button class="tab-btn text-lg font-medium py-3 px-6 text-gray-600 hover:text-amber-700" data-tab="opensource">開源研究項目</button>
+        </nav>
+
+        <main id="content-container">
+            <section id="paid" class="tab-content">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800">付費專業工具</h2>
+                    <p class="mt-2 text-md text-gray-500 max-w-2xl mx-auto">為追求極致表現的玩家設計，提供最深入的數據分析、HUD 支援與 GTO 策略學習功能。</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Hand2Note</h3>
+                        <p class="text-gray-500 mb-4 flex-grow">功能最強大的追蹤軟體之一，以其高效能和高度客製化的動態 HUD 聞名。</p>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mb-4">
+                            <li>動態 HUD (根據對手位置、行動變化)</li>
+                            <li>處理速度極快，資料庫效能優異</li>
+                            <li>進階筆記和範圍分析功能</li>
+                        </ul>
+                        <div class="mt-auto pt-4 border-t border-gray-100">
+                            <p><span class="font-semibold">核心優勢：</span>客製化潛力無限，適合數據驅動的職業玩家。</p>
+                            <p><span class="font-semibold">價格：</span>月費訂閱制，提供功能受限的免費版。</p>
+                        </div>
+                    </div>
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">PokerTracker 4</h3>
+                        <p class="text-gray-500 mb-4 flex-grow">業界標竿，以穩定、全面的功能和相對友善的介面著稱，是許多玩家的第一選擇。</p>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mb-4">
+                            <li>穩定可靠，社群支援廣泛</li>
+                            <li>全面的數據報告和圖表分析</li>
+                            <li>GGPoker 需搭配第三方手牌轉換器</li>
+                        </ul>
+                        <div class="mt-auto pt-4 border-t border-gray-100">
+                            <p><span class="font-semibold">核心優勢：</span>功能全面且平衡，一次性買斷，性價比高。</p>
+                            <p><span class="font-semibold">價格：</span>一次性購買，依遊戲級別區分版本。</p>
+                        </div>
+                    </div>
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">GTO Wizard</h3>
+                        <p class="text-gray-500 mb-4 flex-grow">頂尖的 GTO (賽局理論最佳化) 學習平台，非傳統追蹤軟體，專注於策略分析。</p>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mb-4">
+                            <li>龐大的 GTO 解決方案資料庫</li>
+                            <li>上傳手牌進行 GTO 偏差分析</li>
+                            <li>互動式訓練模式，提升決策品質</li>
+                        </ul>
+                        <div class="mt-auto pt-4 border-t border-gray-100">
+                            <p><span class="font-semibold">核心優勢：</span>精進 GTO 觀念、分析決策品質的最佳工具。</p>
+                            <p><span class="font-semibold">價格：</span>月費或年費訂閱制。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-center mb-2 text-gray-800">專業工具互動比較</h3>
+                    <p class="text-center text-gray-500 mb-6">從下拉選單中選擇比較指標，以視覺化方式評估各工具的優劣。</p>
+                    <div class="flex justify-center mb-6">
+                        <select id="metric-selector" class="block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm">
+                            <option value="features" selected>功能全面性</option>
+                            <option value="easeOfUse">學習與易用性</option>
+                            <option value="valueForMoney">性價比</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="tools-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="free" class="tab-content hidden">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800">免費入門工具</h2>
+                    <p class="mt-2 text-md text-gray-500 max-w-2xl mx-auto">無需花費即可開始分析您的牌局。這些工具是了解手牌分析基礎、回顧關鍵手牌的絕佳起點。</p>
+                </div>
+                 <div class="grid md:grid-cols-2 gap-8">
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">GGPoker PokerCraft</h3>
+                        <p class="text-gray-500 mb-4 flex-grow">GGPoker 官方內建的分析工具，是所有 GGPoker 玩家的基礎。</p>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mb-4">
+                            <li>查看個人生涯統計數據</li>
+                            <li>回顧與分享任何一手牌</li>
+                            <li>下載手牌歷史以供其他工具分析</li>
+                        </ul>
+                        <div class="mt-auto pt-4 border-t border-gray-100">
+                            <p><span class="font-semibold">核心優勢：</span>完全免費且與客戶端整合，是分析的起點。</p>
+                            <p><span class="font-semibold">適用玩家：</span>所有 GGPoker 玩家。</p>
+                        </div>
+                    </div>
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">線上撲克手牌重播器</h3>
+                        <p class="text-gray-500 mb-4 flex-grow">許多撲克策略網站提供免費的手牌重播功能，方便分享和討論。</p>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mb-4">
+                            <li>將手牌歷史文本貼上即可生成視覺化重播</li>
+                            <li>輕鬆分享連結給朋友或教練</li>
+                            <li>無需安裝任何軟體</li>
+                        </ul>
+                        <div class="mt-auto pt-4 border-t border-gray-100">
+                            <p><span class="font-semibold">核心優勢：</span>快速、方便地分享和回顧單一手牌。</p>
+                            <p><span class="font-semibold">適用玩家：</span>希望與他人討論特定手牌的玩家。</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="opensource" class="tab-content hidden">
+                <div class="text-center mb-12">
+                     <h2 class="text-3xl font-bold text-gray-800">開源研究項目 (GitHub)</h2>
+                    <p class="mt-2 text-md text-gray-500 max-w-2xl mx-auto">適合有程式背景的玩家或開發者，透過這些項目深入了解手牌數據結構，甚至打造自己的分析工具。</p>
+                </div>
+                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Hand History Parsers</h3>
+                        <p class="text-gray-500 mb-4 flex-grow">用於解析 GGPoker 手牌歷史純文本檔案的程式庫，通常以 Python 或 Javascript 編寫。</p>
+                         <div class="mt-auto pt-4 border-t border-gray-100">
+                            <p><span class="font-semibold">核心功能：</span>將複雜的文本轉換為程式可讀的結構化數據 (如 JSON)，包含玩家、行動、底池大小等資訊。</p>
+                            <p><span class="font-semibold">研究方向：</span>學習撲克數據結構、自動化數據提取。</p>
+                        </div>
+                    </div>
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Poker Equity Calculators</h3>
+                        <p class="text-gray-500 mb-4 flex-grow">計算在牌局中特定情況下，不同手牌對抗一個或多個範圍時的勝率 (Equity)。</p>
+                         <div class="mt-auto pt-4 border-t border-gray-100">
+                             <p><span class="font-semibold">核心功能：</span>輸入牌面和手牌範圍，透過蒙地卡羅模擬計算勝率。是撲克數學的基礎。</p>
+                            <p><span class="font-semibold">研究方向：</span>機率計算、演算法優化、範圍分析。</p>
+                        </div>
+                    </div>
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Poker AI / Engines</h3>
+                        <p class="text-gray-500 mb-4 flex-grow">更為複雜的專案，旨在創建能玩撲克的 AI 或遊戲引擎，涉及決策理論和演算法。</p>
+                         <div class="mt-auto pt-4 border-t border-gray-100">
+                            <p><span class="font-semibold">核心功能：</span>實現撲克遊戲規則，並開發決策模型 (例如基於規則或機器學習)。</p>
+                            <p><span class="font-semibold">研究方向：</span>人工智慧、賽局理論、軟體架構設計。</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+
+                    contents.forEach(content => {
+                        content.classList.add('hidden');
+                    });
+
+                    document.getElementById(this.dataset.tab).classList.remove('hidden');
+                });
+            });
+            
+            const chartData = {
+                labels: ['Hand2Note', 'PokerTracker 4', 'GTO Wizard'],
+                datasets: {
+                    features: [
+                        { label: '功能全面性', data: [9, 8, 8.5], backgroundColor: 'rgba(217, 119, 6, 0.6)', borderColor: 'rgba(217, 119, 6, 1)', borderWidth: 1 }
+                    ],
+                    easeOfUse: [
+                        { label: '學習與易用性', data: [6, 9, 8], backgroundColor: 'rgba(22, 163, 74, 0.6)', borderColor: 'rgba(22, 163, 74, 1)', borderWidth: 1 }
+                    ],
+                    valueForMoney: [
+                        { label: '性價比', data: [7, 9, 6], backgroundColor: 'rgba(37, 99, 235, 0.6)', borderColor: 'rgba(37, 99, 235, 1)', borderWidth: 1 }
+                    ]
+                }
+            };
+
+            const ctx = document.getElementById('tools-chart').getContext('2d');
+            let myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: chartData.datasets.features
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + ' / 10';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const metricSelector = document.getElementById('metric-selector');
+            metricSelector.addEventListener('change', function () {
+                const selectedMetric = this.value;
+                myChart.data.datasets = chartData.datasets[selectedMetric];
+                myChart.update();
+            });
+        });
+    </script>
+</body>
+</html>
