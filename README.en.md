@@ -2,6 +2,14 @@
 
 # Concerto of Day and Night - Automated HTML Project Showcase
 
+<img src="images/banner_.png" alt="Project Banner" style="border-radius: 10px; margin-top: 10px; margin-bottom: 10px;width: 350px; height: 300px;">
+
+## 🚀 Live Demo
+
+[**Click here to view the live demo**](https://show.zeabur.app/)
+
+---
+
 The core goal of this project is to provide a **simple, fast, and automated** solution for instantly publishing and managing your HTML projects. It is not only an interactive portfolio but also a modern web development paradigm practicing CI/CD, secure API proxying, and AI-powered metadata automation.
 
 ## ✨ Project Overview

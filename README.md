@@ -2,6 +2,14 @@
 
 # 晝夜協奏曲 - 自動化 HTML 專案展示平台
 
+<img src="images/banner_.png" alt="Project Banner" style="border-radius: 10px; margin-top: 10px; margin-bottom: 10px;width: 350px; height: 300px;">
+
+## 🚀 線上展示 (Live Demo)
+
+[**點擊此處查看線上展示**](https://show.zeabur.app/)
+
+---
+
 本專案的核心目標是提供一個**簡單、快速、自動化**的解決方案，讓你上傳的 HTML 專案能夠被即時展示和管理。它不僅是一個互動式作品集，更是一個實踐 CI/CD、安全 API 代理和 AI 自動化元數據管理的現代 Web 開發範例。
 
 ## ✨ 專案概述
