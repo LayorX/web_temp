@@ -1,0 +1,46 @@
+
+name: Auto-update Project Metadata
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'public/show/**.html' # 只在 show 資料夾有新 html 檔案時觸發
+
+jobs:
+  update-metadata:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # 使用一個穩定的 LTS 版本
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run update script
+        run: npm run update
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add metadata.json
+          
+          # 檢查是否有變更需要提交
+          if git diff --staged --quiet; then
+            echo "✅ metadata.json is up to date. No changes to commit."
+          else
+            git commit -m "chore(bot): auto-update project metadata"
+            git push
+            echo "🚀 Committed and pushed updated metadata.json"
+          fi
