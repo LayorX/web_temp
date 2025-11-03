@@ -14,7 +14,7 @@ const METADATA_PATH = path.join(ROOT_DIR, 'metadata.json');
 
 // --- Gemini API 設定 ---
 const API_KEY = process.env.GEMINI_API_KEY;
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
 
 /**
  * 讀取 JSON 檔案並回傳內容，若檔案不存在則回傳空物件。
