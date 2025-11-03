@@ -42,6 +42,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "✅ metadata.json is up to date. No changes to commit."
           else
+            git pull --rebase
             git commit -m "chore(bot): auto-update project metadata"
             git push
             echo "🚀 Committed and pushed updated metadata.json"
