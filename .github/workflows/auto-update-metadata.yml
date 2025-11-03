@@ -5,8 +5,11 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'public/show/**.html' # 只在 show 資料夾有新 html 檔案時觸發
+
+# 確保同一個分支上，一次只有一個工作流程在運行
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   update-metadata:
@@ -18,38 +21,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          # 獲取所有歷史紀錄，以便腳本可以比較 commits
           fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # 使用一個穩定的 LTS 版本
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm install
 
       - name: Run update script
-        run: npm run update
+        id: run_script
+        run: node scripts/update-projects.js
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Commit and Push Results
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-          # 拉取最新的程式碼以避免衝突
-          git pull origin main
-
-          # 檢查是否有變更需要提交
+          
+          # 只需要檢查 metadata.json 是否有變動
           if git diff --quiet metadata.json; then
             echo "✅ metadata.json is up to date. No changes to commit."
           else
             git add metadata.json
-            git commit -m "chore(bot): auto-update project metadata [CI]"
-            git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git HEAD:main
+            # 在 commit message 中加入 [skip ci] 來防止無限循環
+            git commit -m "chore(bot): auto-update project metadata [skip ci]"
+            git push
             echo "🚀 Committed and pushed updated metadata.json"
           fi
