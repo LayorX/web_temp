@@ -128,7 +128,9 @@ function getChangedFiles() {
 }
 
 function getDiffLineCount(filePath) {
-    const output = execSync(`git diff --numstat HEAD~1 HEAD -- ${filePath}`).toString();
+    const gitdiff = `git diff --numstat HEAD~1 HEAD --  "${filePath}"`
+    const output = execSync(gitdiff).toString();
+    console.log(output)
     const match = output.match(/^(\d+)\s+(\d+)/);
     return match ? parseInt(match[1]) + parseInt(match[2]) : 0;
 }
