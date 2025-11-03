@@ -34,8 +34,22 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-      - name: Commit updated metadata
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore(bot): auto-update project metadata"
-          file_pattern: metadata.json
+      - name: Commit and Push Results
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 拉取最新的程式碼以避免衝突
+          git pull origin main
+
+          # 檢查是否有變更需要提交
+          if git diff --quiet metadata.json; then
+            echo "✅ metadata.json is up to date. No changes to commit."
+          else
+            git add metadata.json
+            git commit -m "chore(bot): auto-update project metadata [CI]"
+            git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git HEAD:main
+            echo "🚀 Committed and pushed updated metadata.json"
+          fi
