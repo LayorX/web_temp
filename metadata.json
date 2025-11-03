@@ -70,5 +70,14 @@
       "專案管理",
       "發展策略"
     ]
+  },
+  "test-project.html": {
+    "name": "CI/CD 元數據自動化專案",
+    "desc": "此專案自動化 GitHub Actions CI/CD 流程測試，偵測檔案變動、分析內容並生成元數據，確保 `metadata.json` 即時更新，提升開發效率。",
+    "tags": [
+      "CI/CD",
+      "自動化",
+      "元數據管理"
+    ]
   }
 }
