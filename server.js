@@ -118,12 +118,15 @@ app.post('/api/proxy/image', async (req, res) => {
 
 // 文字生成代理
 app.post('/api/proxy/text', async (req, res) => {
-    const { prompt } = req.body;
+    // 直接從請求主體獲取 contents 和 generationConfig
+    const { contents, generationConfig } = req.body;
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: '伺服器未設定 API 金鑰' });
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    
+    // 傳遞從客戶端收到的完整 payload
+    const payload = { contents, generationConfig };
 
     try {
         const apiResponse = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });

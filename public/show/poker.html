@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>德州撲克戰績追蹤器 (最終版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', 'Noto Sans TC', sans-serif; }
+        .card {
+            background-color: #1F2937; border-radius: 0.75rem;
+            padding: 1.5rem; border: 1px solid #374151;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .profit { color: #22C55E; }
+        .loss { color: #EF4444; }
+        .neutral { color: #E5E7EB; }
+        .input-field, .file-input-label, .select-field {
+            background-color: #374151; border: 1px solid #4B5563;
+            color: #F9FAFB; border-radius: 0.5rem; padding: 0.75rem 1rem;
+            width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-field:focus, .select-field:focus {
+            outline: none; border-color: #3B82F6; box-shadow: 0 0 0 2px #1E40AF;
+        }
+        .btn {
+            color: white; font-weight: 600; padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem; transition: background-color 0.2s;
+            width: 100%; text-align: center; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-primary { background-color: #3B82F6; }
+        .btn-primary:hover { background-color: #2563EB; }
+        .btn-secondary { background-color: #6B7280; }
+        .btn-secondary:hover { background-color: #4B5563; }
+        .btn-danger { background-color: #DC2626; }
+        .btn-danger:hover { background-color: #B91C1C; }
+        .btn-success { background-color: #16A34A; }
+        .btn-success:hover { background-color: #15803D; }
+        
+        .modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-backdrop.show { opacity: 1; visibility: visible; }
+        .modal-content {
+            background-color: #1F2937;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+            border: 1px solid #374151;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .table-wrapper { max-height: 400px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #374151; }
+        th { background-color: #374151; font-weight: 600; }
+        tbody tr:hover { background-color: #374151; }
+        .loader {
+            border: 4px solid #4B5563;
+            border-top: 4px solid #3B82F6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #ai-result h1, #ai-result h2, #ai-result h3 { font-size: 1.1em; font-weight: bold; margin-top: 0.5em; }
+        #ai-result ul { list-style-type: disc; margin-left: 1.5rem; }
+        #ai-result li { margin-bottom: 0.25rem; }
+        #ai-result p { margin-bottom: 0.5rem; }
+        
+        .luck-indicator { display: flex; justify-content: center; align-items: center; gap: 0.5rem; }
+        .luck-clover {
+            width: 24px; height: 24px;
+            fill: #4B5563; /* Default inactive color */
+            transition: fill 0.3s;
+            opacity: 0.3;
+        }
+        .luck-clover.active { 
+            fill: #FBBF24; /* Active color */
+            opacity: 1;
+        }
+        .luck-label { font-size: 0.9rem; font-weight: 500; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4">
+
+    <div class="w-full max-w-7xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-white">🃏 德州撲克戰績追蹤器</h1>
+            <p class="text-gray-400 mt-2">追蹤您的每一次牌局，用數據見證成長。</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左側控制面板 -->
+            <div class="lg:col-span-1 flex flex-col gap-8">
+                <!-- Profile Management -->
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-4">👤 帳戶管理</h2>
+                    <div class="space-y-3">
+                        <select id="profile-select" class="select-field"></select>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button id="add-profile-btn" class="btn btn-success">新增帳戶</button>
+                            <button id="delete-profile-btn" class="btn btn-danger">刪除當前</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Control -->
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-4">牌局控制</h2>
+                    <div id="session-timer" class="text-center text-3xl font-mono bg-gray-900 p-3 rounded-lg mb-4">00:00:00</div>
+                    <button id="start-session-btn" class="btn btn-success">🚀 開始新牌局</button>
+                    <button id="end-session-btn" class="btn btn-danger hidden">⏹️ 結束並儲存</button>
+                </div>
+                
+                <!-- 輸入表單 -->
+                <div id="input-form-wrapper" class="card hidden">
+                    <form id="input-form" class="space-y-4">
+                        <div>
+                            <label for="big-blind" class="block mb-2 font-medium text-gray-300">大盲注 (BB)</label>
+                            <input type="number" id="big-blind" class="input-field" placeholder="例如: 2" step="any">
+                        </div>
+                        <div>
+                            <label for="platform-start-cash" class="block mb-2 font-medium text-gray-300">平台起始資金 ($)</label>
+                            <input type="number" id="platform-start-cash" class="input-field" placeholder="牌局開始前平台總金額" step="any">
+                        </div>
+                        <div>
+                            <label for="platform-end-cash" class="block mb-2 font-medium text-gray-300">平台最終資金 ($)</label>
+                            <input type="number" id="platform-end-cash" class="input-field" placeholder="牌局結束後平台總金額" step="any">
+                        </div>
+                        <div>
+                            <label for="hands" class="block mb-2 font-medium text-gray-300">總手牌數 (可選)</label>
+                            <input type="number" id="hands" class="input-field" placeholder="例如: 300">
+                        </div>
+                        <div>
+                            <label for="winloss" class="block mb-2 font-medium text-gray-300">Winloss ($) (綠線)</label>
+                            <input type="number" id="winloss" class="input-field" placeholder="不抽水的實際獲利" step="any">
+                        </div>
+                        <div>
+                            <label for="all-in-ev" class="block mb-2 font-medium text-gray-300">All-in EV ($) (橘線)</label>
+                            <input type="number" id="all-in-ev" class="input-field" placeholder="不抽水的期望獲利" step="any">
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 資金管理 -->
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-4">資金管理</h2>
+                    <div>
+                        <label for="total-bankroll" class="block mb-2 font-medium text-gray-300">我的總資金 ($)</label>
+                        <input type="number" id="total-bankroll" class="input-field" placeholder="輸入您的撲克總資金" step="any">
+                        <p id="bankroll-advice" class="text-sm text-gray-400 mt-2"></p>
+                    </div>
+                </div>
+
+                <!-- 數據管理 -->
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-4">數據管理</h2>
+                    <div class="flex flex-col gap-3">
+                        <button id="export-btn" class="btn btn-secondary">📤 匯出 CSV</button>
+                        <label for="import-file" class="btn btn-secondary file-input-label">📥 匯入 CSV</label>
+                        <input type="file" id="import-file" class="hidden" accept=".csv">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側分析與歷史紀錄 -->
+            <div class="lg:col-span-2 flex flex-col gap-8">
+                <!-- 綜合儀表板 -->
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-4">📈 綜合儀表板</h2>
+                    <div id="dashboard" class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-6">
+                        <div class="text-center"><p class="text-sm text-gray-400">總盈虧</p><p id="db-total-pl" class="text-2xl font-bold">N/A</p></div>
+                        <div class="text-center"><p class="text-sm text-gray-400">總支付水錢</p><p id="db-total-rake" class="text-2xl font-bold">N/A</p></div>
+                        <div class="text-center"><p class="text-sm text-gray-400">平均時薪</p><p id="db-avg-hourly" class="text-2xl font-bold">N/A</p></div>
+                        <div class="text-center"><p class="text-sm text-gray-400">Winloss (bb/100)</p><p id="db-winloss-bb100" class="text-2xl font-bold">N/A</p></div>
+                        <div class="text-center"><p class="text-sm text-gray-400">實際盈虧 (bb/100)</p><p id="db-actual-bb100" class="text-2xl font-bold">N/A</p></div>
+                        <div class="text-center"><p class="text-sm text-gray-400">運氣 (bb/100)</p><p id="db-luck-bb100" class="text-2xl font-bold">N/A</p></div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-gray-700">
+                        <p class="text-center text-sm text-gray-400 mb-2">運氣指數</p>
+                        <div id="luck-indicator-visual" class="luck-indicator">
+                            <svg class="luck-clover" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,6.5A1.5,1.5 0 0,1 12.5,8A1.5,1.5 0 0,1 11,9.5A1.5,1.5 0 0,1 9.5,8A1.5,1.5 0 0,1 11,6.5M17.5,11A1.5,1.5 0 0,1 16,12.5A1.5,1.5 0 0,1 14.5,11A1.5,1.5 0 0,1 16,9.5A1.5,1.5 0 0,1 17.5,11M13,14.5A1.5,1.5 0 0,1 14.5,16A1.5,1.5 0 0,1 13,17.5A1.5,1.5 0 0,1 11.5,16A1.5,1.5 0 0,1 13,14.5M6.5,11A1.5,1.5 0 0,1 8,12.5A1.5,1.5 0 0,1 6.5,14A1.5,1.5 0 0,1 5,12.5A1.5,1.5 0 0,1 6.5,11Z" /></svg>
+                            <svg class="luck-clover" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,6.5A1.5,1.5 0 0,1 12.5,8A1.5,1.5 0 0,1 11,9.5A1.5,1.5 0 0,1 9.5,8A1.5,1.5 0 0,1 11,6.5M17.5,11A1.5,1.5 0 0,1 16,12.5A1.5,1.5 0 0,1 14.5,11A1.5,1.5 0 0,1 16,9.5A1.5,1.5 0 0,1 17.5,11M13,14.5A1.5,1.5 0 0,1 14.5,16A1.5,1.5 0 0,1 13,17.5A1.5,1.5 0 0,1 11.5,16A1.5,1.5 0 0,1 13,14.5M6.5,11A1.5,1.5 0 0,1 8,12.5A1.5,1.5 0 0,1 6.5,14A1.5,1.5 0 0,1 5,12.5A1.5,1.5 0 0,1 6.5,11Z" /></svg>
+                            <svg class="luck-clover" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,6.5A1.5,1.5 0 0,1 12.5,8A1.5,1.5 0 0,1 11,9.5A1.5,1.5 0 0,1 9.5,8A1.5,1.5 0 0,1 11,6.5M17.5,11A1.5,1.5 0 0,1 16,12.5A1.5,1.5 0 0,1 14.5,11A1.5,1.5 0 0,1 16,9.5A1.5,1.5 0 0,1 17.5,11M13,14.5A1.5,1.5 0 0,1 14.5,16A1.5,1.5 0 0,1 13,17.5A1.5,1.5 0 0,1 11.5,16A1.5,1.5 0 0,1 13,14.5M6.5,11A1.5,1.5 0 0,1 8,12.5A1.5,1.5 0 0,1 6.5,14A1.5,1.5 0 0,1 5,12.5A1.5,1.5 0 0,1 6.5,11Z" /></svg>
+                            <svg class="luck-clover" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,6.5A1.5,1.5 0 0,1 12.5,8A1.5,1.5 0 0,1 11,9.5A1.5,1.5 0 0,1 9.5,8A1.5,1.5 0 0,1 11,6.5M17.5,11A1.5,1.5 0 0,1 16,12.5A1.5,1.5 0 0,1 14.5,11A1.5,1.5 0 0,1 16,9.5A1.5,1.5 0 0,1 17.5,11M13,14.5A1.5,1.5 0 0,1 14.5,16A1.5,1.5 0 0,1 13,17.5A1.5,1.5 0 0,1 11.5,16A1.5,1.5 0 0,1 13,14.5M6.5,11A1.5,1.5 0 0,1 8,12.5A1.5,1.5 0 0,1 6.5,14A1.5,1.5 0 0,1 5,12.5A1.5,1.5 0 0,1 6.5,11Z" /></svg>
+                            <svg class="luck-clover" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,6.5A1.5,1.5 0 0,1 12.5,8A1.5,1.5 0 0,1 11,9.5A1.5,1.5 0 0,1 9.5,8A1.5,1.5 0 0,1 11,6.5M17.5,11A1.5,1.5 0 0,1 16,12.5A1.5,1.5 0 0,1 14.5,11A1.5,1.5 0 0,1 16,9.5A1.5,1.5 0 0,1 17.5,11M13,14.5A1.5,1.5 0 0,1 14.5,16A1.5,1.5 0 0,1 13,17.5A1.5,1.5 0 0,1 11.5,16A1.5,1.5 0 0,1 13,14.5M6.5,11A1.5,1.5 0 0,1 8,12.5A1.5,1.5 0 0,1 6.5,14A1.5,1.5 0 0,1 5,12.5A1.5,1.5 0 0,1 6.5,11Z" /></svg>
+                        </div>
+                         <p id="luck-label" class="text-center luck-label mt-2">--</p>
+                    </div>
+                </div>
+                
+                <!-- AI 分析 -->
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">🤖 AI 智慧分析</h2>
+                        <button id="ai-analysis-btn" class="btn btn-primary" style="width: auto;">開始分析</button>
+                    </div>
+                    <div id="ai-result-wrapper" class="text-left">
+                        <div id="ai-loader" class="loader hidden"></div>
+                        <div id="ai-result" class="text-gray-300 whitespace-pre-wrap">點擊按鈕，讓 AI 為您分析戰績。</div>
+                    </div>
+                </div>
+
+                <!-- 盈虧圖表 -->
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-4">📊 盈虧趨勢圖</h2>
+                    <div class="relative h-64 md:h-80">
+                        <canvas id="profit-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 歷史紀錄 -->
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-4">📑 歷史紀錄</h2>
+                    <div id="history-table-wrapper" class="table-wrapper">
+                        <table id="history-table">
+                            <thead>
+                                <tr><th>日期</th><th>盈虧($)</th><th>Winloss($)</th><th>水錢($)</th><th>運氣($)</th><th>操作</th></tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS動態生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                     <p id="no-history" class="text-center text-gray-500 mt-4">尚無歷史紀錄。</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 通用提示 Modal -->
+    <div id="modal-backdrop" class="modal-backdrop">
+        <div class="modal-content">
+            <h3 id="modal-title" class="text-xl font-bold mb-4">提示</h3>
+            <p id="modal-message" class="text-gray-300 mb-6"></p>
+            <div id="modal-actions" class="flex justify-center gap-4"></div>
+        </div>
+    </div>
+
+    <!-- 編輯紀錄 Modal -->
+    <div id="edit-modal-backdrop" class="modal-backdrop">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-6">編輯牌局紀錄</h3>
+            <form id="edit-form" class="space-y-4 text-left">
+                <input type="hidden" id="edit-record-id">
+                <div>
+                    <label for="edit-date" class="block mb-2 font-medium text-gray-300">日期</label>
+                    <input type="datetime-local" id="edit-date" class="input-field">
+                </div>
+                 <!-- FIX: Added duration input -->
+                <div>
+                    <label for="edit-duration" class="block mb-2 font-medium text-gray-300">時長 (秒)</label>
+                    <input type="number" id="edit-duration" class="input-field">
+                </div>
+                <div>
+                    <label for="edit-big-blind" class="block mb-2 font-medium text-gray-300">大盲注 (BB)</label>
+                    <input type="number" id="edit-big-blind" class="input-field" step="any">
+                </div>
+                <div>
+                    <label for="edit-platform-start-cash" class="block mb-2 font-medium text-gray-300">平台起始資金 ($)</label>
+                    <input type="number" id="edit-platform-start-cash" class="input-field" step="any">
+                </div>
+                <div>
+                    <label for="edit-platform-end-cash" class="block mb-2 font-medium text-gray-300">平台最終資金 ($)</label>
+                    <input type="number" id="edit-platform-end-cash" class="input-field" step="any">
+                </div>
+                <div>
+                    <label for="edit-hands" class="block mb-2 font-medium text-gray-300">總手牌數</label>
+                    <input type="number" id="edit-hands" class="input-field">
+                </div>
+                <div>
+                    <label for="edit-winloss" class="block mb-2 font-medium text-gray-300">Winloss ($)</label>
+                    <input type="number" id="edit-winloss" class="input-field" step="any">
+                </div>
+                <div>
+                    <label for="edit-all-in-ev" class="block mb-2 font-medium text-gray-300">All-in EV ($)</label>
+                    <input type="number" id="edit-all-in-ev" class="input-field" step="any">
+                </div>
+            </form>
+            <div class="flex justify-center gap-4 mt-6">
+                <button id="save-edit-btn" class="btn btn-primary">儲存變更</button>
+                <button id="cancel-edit-btn" class="btn btn-secondary">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增 Prompt Modal 用於輸入 -->
+    <div id="prompt-modal-backdrop" class="modal-backdrop">
+        <div class="modal-content">
+            <h3 id="prompt-modal-title" class="text-xl font-bold mb-4"></h3>
+            <p id="prompt-modal-message" class="text-gray-300 mb-4"></p>
+            <input type="text" id="prompt-modal-input" class="input-field mb-6">
+            <div class="flex justify-center gap-4">
+                 <button id="prompt-ok-btn" class="btn btn-primary">確定</button>
+                 <button id="prompt-cancel-btn" class="btn btn-secondary">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM Elements ---
+        const profileSelect = document.getElementById('profile-select');
+        const addProfileBtn = document.getElementById('add-profile-btn');
+        const deleteProfileBtn = document.getElementById('delete-profile-btn');
+        const startSessionBtn = document.getElementById('start-session-btn');
+        const endSessionBtn = document.getElementById('end-session-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const importFile = document.getElementById('import-file');
+        const aiAnalysisBtn = document.getElementById('ai-analysis-btn');
+        
+        const inputFormWrapper = document.getElementById('input-form-wrapper');
+        const sessionTimerEl = document.getElementById('session-timer');
+        const historyTableBody = document.querySelector('#history-table tbody');
+        const noHistoryMsg = document.getElementById('no-history');
+        const bankrollAdviceEl = document.getElementById('bankroll-advice');
+        
+        const totalBankrollInput = document.getElementById('total-bankroll');
+        const bigBlindInput = document.getElementById('big-blind');
+        const platformStartCashInput = document.getElementById('platform-start-cash');
+        const platformEndCashInput = document.getElementById('platform-end-cash');
+        const handsInput = document.getElementById('hands');
+        const winlossInput = document.getElementById('winloss');
+        const allInEvInput = document.getElementById('all-in-ev');
+
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalActions = document.getElementById('modal-actions');
+        
+        const editModalBackdrop = document.getElementById('edit-modal-backdrop');
+        const saveEditBtn = document.getElementById('save-edit-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        
+        const promptModalBackdrop = document.getElementById('prompt-modal-backdrop');
+        
+        const profitChartCanvas = document.getElementById('profit-chart');
+        const aiLoader = document.getElementById('ai-loader');
+        const aiResult = document.getElementById('ai-result');
+
+        // --- State Management ---
+        let sessionInProgress = false;
+        let startTime = null;
+        let timerInterval = null;
+        let profitChart = null;
+        let currentProfile = null;
+
+        // --- Profile Management ---
+        const PROFILE_LIST_KEY = 'pokerProfileList';
+        const LAST_PROFILE_KEY = 'pokerLastActiveProfile';
+        const getHistoryKey = (profile) => `pokerHistory_v8_${profile}`;
+        const getBankrollKey = (profile) => `pokerBankroll_v8_${profile}`;
+        
+        const loadProfiles = () => {
+            let profiles = JSON.parse(localStorage.getItem(PROFILE_LIST_KEY) || '["Default"]');
+            if (profiles.length === 0) profiles = ["Default"];
+            
+            profileSelect.innerHTML = '';
+            profiles.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p;
+                option.textContent = p;
+                profileSelect.appendChild(option);
+            });
+            
+            const lastProfile = localStorage.getItem(LAST_PROFILE_KEY);
+            currentProfile = profiles.includes(lastProfile) ? lastProfile : profiles[0];
+            profileSelect.value = currentProfile;
+            
+            loadBankroll();
+            renderAll();
+        };
+
+        const switchProfile = (profileName) => {
+            currentProfile = profileName;
+            localStorage.setItem(LAST_PROFILE_KEY, currentProfile);
+            profileSelect.value = currentProfile;
+            loadBankroll();
+            renderAll();
+        };
+
+        const addProfile = () => {
+            showPrompt("新增帳戶", "請輸入新的帳戶名稱：", (newProfileName) => {
+                if (!newProfileName || newProfileName.trim() === '') return;
+                
+                let profiles = JSON.parse(localStorage.getItem(PROFILE_LIST_KEY) || '[]');
+                if (profiles.includes(newProfileName)) {
+                    showModal("錯誤", "此帳戶名稱已存在。");
+                    return;
+                }
+                
+                profiles.push(newProfileName);
+                localStorage.setItem(PROFILE_LIST_KEY, JSON.stringify(profiles));
+                
+                const option = document.createElement('option');
+                option.value = newProfileName;
+                option.textContent = newProfileName;
+                profileSelect.appendChild(option);
+                
+                switchProfile(newProfileName);
+            });
+        };
+
+        const deleteProfile = () => {
+            let profiles = JSON.parse(localStorage.getItem(PROFILE_LIST_KEY) || '[]');
+            if (profiles.length <= 1) {
+                showModal("操作無效", "無法刪除最後一個帳戶。");
+                return;
+            }
+            
+            const actions = [
+                { text: `確定刪除 '${currentProfile}'`, class: 'btn-danger', action: () => {
+                    localStorage.removeItem(getHistoryKey(currentProfile));
+                    localStorage.removeItem(getBankrollKey(currentProfile));
+                    
+                    const newProfiles = profiles.filter(p => p !== currentProfile);
+                    localStorage.setItem(PROFILE_LIST_KEY, JSON.stringify(newProfiles));
+                    
+                    loadProfiles();
+                    closeModal();
+                }},
+                { text: '取消', class: 'btn-secondary', action: closeModal }
+            ];
+            showModal("⚠️ 確認操作", `您確定要刪除帳戶 "${currentProfile}" 嗎？所有相關數據將被永久移除。`, actions);
+        };
+
+        const loadBankroll = () => {
+            totalBankrollInput.value = localStorage.getItem(getBankrollKey(currentProfile)) || '';
+        };
+        
+        const saveBankroll = () => {
+            localStorage.setItem(getBankrollKey(currentProfile), totalBankrollInput.value);
+        };
+
+        // --- Helper Functions ---
+        const showModal = (title, message, actions = [{ text: '關閉', class: 'btn-secondary', action: closeModal }]) => {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalActions.innerHTML = '';
+            actions.forEach(actionInfo => {
+                const button = document.createElement('button');
+                button.textContent = actionInfo.text;
+                button.className = `btn ${actionInfo.class}`;
+                button.onclick = actionInfo.action;
+                modalActions.appendChild(button);
+            });
+            modalBackdrop.classList.add('show');
+        };
+        const closeModal = () => modalBackdrop.classList.remove('show');
+        window.closeModal = closeModal;
+
+        const showPrompt = (title, message, callback) => {
+            const promptTitle = document.getElementById('prompt-modal-title');
+            const promptMessage = document.getElementById('prompt-modal-message');
+            const promptInput = document.getElementById('prompt-modal-input');
+            const okBtn = document.getElementById('prompt-ok-btn');
+            const cancelBtn = document.getElementById('prompt-cancel-btn');
+
+            promptTitle.textContent = title;
+            promptMessage.textContent = message;
+            promptInput.value = '';
+            promptModalBackdrop.classList.add('show');
+            promptInput.focus();
+
+            const handleOk = () => {
+                promptModalBackdrop.classList.remove('show');
+                callback(promptInput.value);
+                okBtn.removeEventListener('click', handleOk);
+                cancelBtn.removeEventListener('click', handleCancel);
+            };
+            
+            const handleCancel = () => {
+                promptModalBackdrop.classList.remove('show');
+                callback(null);
+                okBtn.removeEventListener('click', handleOk);
+                cancelBtn.removeEventListener('click', handleCancel);
+            };
+
+            okBtn.addEventListener('click', handleOk);
+            cancelBtn.addEventListener('click', handleCancel);
+        };
+
+        const formatTime = (seconds) => {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        };
+
+        const getHistory = () => JSON.parse(localStorage.getItem(getHistoryKey(currentProfile)) || '[]');
+        const saveHistory = (history) => localStorage.setItem(getHistoryKey(currentProfile), JSON.stringify(history));
+
+        const calculateMetrics = (record) => {
+            const actualProfit = record.platformEndCash - record.platformStartCash;
+            const hourlyRate = record.duration > 0 ? (actualProfit / (record.duration / 3600)) : 0;
+            
+            let rakePaid = null;
+            let luckIndex = null;
+            let winlossBB100 = null;
+            let actualProfitBB100 = null;
+            let luckBB100 = null;
+
+            if (record.winloss !== null) {
+                rakePaid = record.winloss - actualProfit;
+                if (record.allinEV !== null) {
+                    luckIndex = record.winloss - record.allinEV;
+                }
+            }
+            
+            if (record.hands > 0 && record.bb > 0) {
+                if (record.winloss !== null) {
+                    winlossBB100 = (record.winloss / record.bb / record.hands) * 100;
+                }
+                actualProfitBB100 = (actualProfit / record.bb / record.hands) * 100;
+                if (luckIndex !== null) {
+                    luckBB100 = (luckIndex / record.bb / record.hands) * 100;
+                }
+            }
+            
+            return { actualProfit, hourlyRate, rakePaid, luckIndex, winlossBB100, actualProfitBB100, luckBB100 };
+        };
+        
+        // --- Core Logic ---
+        const renderAll = () => {
+            const history = getHistory();
+            const fullHistory = history.map(r => ({ ...r, metrics: calculateMetrics(r) }));
+            renderHistoryTable(fullHistory);
+            updateDashboard(fullHistory);
+            renderProfitChart(fullHistory);
+            updateBankrollAdvice();
+        }
+
+        const renderHistoryTable = (fullHistory) => {
+            historyTableBody.innerHTML = '';
+            if (fullHistory.length === 0) {
+                noHistoryMsg.classList.remove('hidden');
+                historyTableBody.parentElement.classList.add('hidden');
+                return;
+            }
+            noHistoryMsg.classList.add('hidden');
+            historyTableBody.parentElement.classList.remove('hidden');
+
+            fullHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            fullHistory.forEach(record => {
+                const { actualProfit, rakePaid, luckIndex } = record.metrics;
+                const row = document.createElement('tr');
+                const plClass = actualProfit > 0 ? 'profit' : actualProfit < 0 ? 'loss' : 'neutral';
+                const luckClass = luckIndex > 0 ? 'profit' : luckIndex < 0 ? 'loss' : 'neutral';
+
+                row.innerHTML = `
+                    <td>${new Date(record.date).toLocaleDateString()}</td>
+                    <td class="${plClass}">${actualProfit > 0 ? '+' : ''}${actualProfit.toFixed(2)}</td>
+                    <td class="neutral">${record.winloss !== null ? record.winloss.toFixed(2) : 'N/A'}</td>
+                    <td class="loss">${rakePaid !== null ? rakePaid.toFixed(2) : 'N/A'}</td>
+                    <td class="${luckClass}">${luckIndex !== null ? (luckIndex > 0 ? '+' : '') + luckIndex.toFixed(2) : 'N/A'}</td>
+                    <td class="flex gap-2">
+                        <button class="edit-btn btn btn-secondary btn-sm" data-id="${record.id}" style="padding: 0.25rem 0.5rem; width: auto; font-size: 0.8rem;">編輯</button>
+                        <button class="delete-btn btn btn-danger btn-sm" data-id="${record.id}" style="padding: 0.25rem 0.5rem; width: auto; font-size: 0.8rem;">刪除</button>
+                    </td>
+                `;
+                historyTableBody.appendChild(row);
+            });
+            
+            document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', handleEditClick));
+            document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', handleDeleteClick));
+        };
+        
+        const handleEditClick = (e) => {
+            const recordId = e.target.dataset.id;
+            const history = getHistory();
+            const record = history.find(r => r.id == recordId);
+            if (!record) return;
+
+            document.getElementById('edit-record-id').value = record.id;
+            const localDate = new Date(record.date);
+            localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+            document.getElementById('edit-date').value = localDate.toISOString().slice(0, 16);
+            
+            // FIX: Populate duration field
+            document.getElementById('edit-duration').value = record.duration;
+            document.getElementById('edit-big-blind').value = record.bb;
+            document.getElementById('edit-platform-start-cash').value = record.platformStartCash;
+            document.getElementById('edit-platform-end-cash').value = record.platformEndCash;
+            document.getElementById('edit-hands').value = record.hands || '';
+            document.getElementById('edit-winloss').value = record.winloss || '';
+            document.getElementById('edit-all-in-ev').value = record.allinEV || '';
+
+            editModalBackdrop.classList.add('show');
+        };
+
+        const handleDeleteClick = (e) => {
+            const recordId = e.target.dataset.id;
+            const actions = [
+                { text: '確定刪除', class: 'btn-danger', action: () => {
+                    let history = getHistory();
+                    history = history.filter(r => r.id != recordId);
+                    saveHistory(history);
+                    renderAll();
+                    closeModal();
+                }},
+                { text: '取消', class: 'btn-secondary', action: closeModal }
+            ];
+            showModal("⚠️ 確認操作", "您確定要刪除這筆紀錄嗎？此操作無法復原。", actions);
+        };
+
+        const saveEditChanges = () => {
+            const recordId = document.getElementById('edit-record-id').value;
+            let history = getHistory();
+            const recordIndex = history.findIndex(r => r.id == recordId);
+            if (recordIndex === -1) return;
+
+            // FIX: Correctly parse local datetime-local input back to UTC ISO string
+            const newDate = new Date(document.getElementById('edit-date').value).toISOString();
+            // FIX: Read and save duration
+            const newDuration = parseInt(document.getElementById('edit-duration').value) || 0;
+            const newBb = parseFloat(document.getElementById('edit-big-blind').value);
+            const newStartCash = parseFloat(document.getElementById('edit-platform-start-cash').value);
+            const newEndCash = parseFloat(document.getElementById('edit-platform-end-cash').value);
+            const newHands = document.getElementById('edit-hands').value ? parseInt(document.getElementById('edit-hands').value) : null;
+            const newWinloss = document.getElementById('edit-winloss').value ? parseFloat(document.getElementById('edit-winloss').value) : null;
+            const newAllinEv = document.getElementById('edit-all-in-ev').value ? parseFloat(document.getElementById('edit-all-in-ev').value) : null;
+            
+            if (isNaN(newBb) || isNaN(newStartCash) || isNaN(newEndCash)) {
+                showModal("錯誤", "大盲注與平台資金為必填項目。");
+                return;
+            }
+
+            history[recordIndex] = {
+                ...history[recordIndex],
+                date: newDate,
+                duration: newDuration,
+                bb: newBb,
+                platformStartCash: newStartCash,
+                platformEndCash: newEndCash,
+                hands: newHands,
+                winloss: newWinloss,
+                allinEV: newAllinEv
+            };
+            
+            saveHistory(history);
+            renderAll();
+            // FIX: Close modal and show success message
+            editModalBackdrop.classList.remove('show');
+            showModal("成功", "紀錄已成功更新！");
+        };
+        
+        cancelEditBtn.addEventListener('click', () => editModalBackdrop.classList.remove('show'));
+        saveEditBtn.addEventListener('click', saveEditChanges);
+
+
+        const updateDashboard = (fullHistory) => {
+            const dbTotalPl = document.getElementById('db-total-pl');
+            const dbTotalRake = document.getElementById('db-total-rake');
+            const dbAvgHourly = document.getElementById('db-avg-hourly');
+            const dbWinlossBB100 = document.getElementById('db-winloss-bb100');
+            const dbActualBB100 = document.getElementById('db-actual-bb100');
+            const dbLuckBB100 = document.getElementById('db-luck-bb100');
+
+            if (fullHistory.length === 0) {
+                ['db-total-pl', 'db-total-rake', 'db-avg-hourly', 'db-winloss-bb100', 'db-actual-bb100', 'db-luck-bb100'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) {
+                        el.textContent = 'N/A';
+                        el.className = 'text-2xl font-bold neutral';
+                    }
+                });
+                updateLuckIndicator(null);
+                return;
+            }
+
+            const totalPl = fullHistory.reduce((sum, r) => sum + r.metrics.actualProfit, 0);
+            const totalDuration = fullHistory.reduce((sum, r) => sum + r.duration, 0);
+            const avgHourly = totalDuration > 0 ? (totalPl / (totalDuration / 3600)) : 0;
+            
+            const totalRakePaid = fullHistory.filter(r => r.metrics.rakePaid !== null).reduce((sum, r) => sum + r.metrics.rakePaid, 0);
+            
+            const sessionsWithHands = fullHistory.filter(r => r.hands > 0 && r.bb > 0);
+            const totalHands = sessionsWithHands.reduce((sum, r) => sum + r.hands, 0);
+            
+            let totalWinlossBB100 = null, totalActualProfitBB100 = null, totalLuckBB100 = null;
+            
+            if (totalHands > 0) {
+                const totalWinlossInBB = sessionsWithHands.reduce((sum, r) => sum + ((r.winloss || 0) / r.bb), 0);
+                const totalActualProfitInBB = sessionsWithHands.reduce((sum, r) => sum + (r.metrics.actualProfit / r.bb), 0);
+                const totalLuckInBB = sessionsWithHands.reduce((sum, r) => sum + ((r.metrics.luckIndex || 0) / r.bb), 0);
+
+                totalWinlossBB100 = (totalWinlossInBB / totalHands) * 100;
+                totalActualProfitBB100 = (totalActualProfitInBB / totalHands) * 100;
+                totalLuckBB100 = (totalLuckInBB / totalHands) * 100;
+            }
+            
+            const plClass = totalPl > 0 ? 'profit' : totalPl < 0 ? 'loss' : 'neutral';
+            dbTotalPl.textContent = `${totalPl > 0 ? '+' : ''}$${totalPl.toFixed(2)}`;
+            dbTotalPl.className = `text-2xl font-bold ${plClass}`;
+
+            dbTotalRake.textContent = `$${totalRakePaid.toFixed(2)}`;
+            dbTotalRake.className = 'text-2xl font-bold loss';
+
+            dbAvgHourly.textContent = `$${avgHourly.toFixed(2)}`;
+            dbAvgHourly.className = `text-2xl font-bold ${plClass}`;
+            
+            const winlossBB100Class = totalWinlossBB100 === null ? 'neutral' : (totalWinlossBB100 > 0 ? 'profit' : 'loss');
+            dbWinlossBB100.textContent = totalWinlossBB100 !== null ? totalWinlossBB100.toFixed(2) : 'N/A';
+            dbWinlossBB100.className = `text-2xl font-bold ${winlossBB100Class}`;
+
+            const actualBB100Class = totalActualProfitBB100 === null ? 'neutral' : (totalActualProfitBB100 > 0 ? 'profit' : 'loss');
+            dbActualBB100.textContent = totalActualProfitBB100 !== null ? totalActualProfitBB100.toFixed(2) : 'N/A';
+            dbActualBB100.className = `text-2xl font-bold ${actualBB100Class}`;
+            
+            const luckBB100Class = totalLuckBB100 === null ? 'neutral' : (totalLuckBB100 > 0 ? 'profit' : 'loss');
+            dbLuckBB100.textContent = totalLuckBB100 !== null ? totalLuckBB100.toFixed(2) : 'N/A';
+            dbLuckBB100.className = `text-2xl font-bold ${luckBB100Class}`;
+            
+            updateLuckIndicator(totalLuckBB100);
+        };
+        
+        const updateLuckIndicator = (luckBB100) => {
+            const clovers = document.querySelectorAll('.luck-clover');
+            const label = document.getElementById('luck-label');
+            
+            clovers.forEach(c => c.classList.remove('active'));
+
+            if (luckBB100 === null) {
+                label.textContent = '數據不足';
+                return;
+            }
+            
+            let level = 0;
+            let labelText = '';
+
+            if (luckBB100 > 15) { level = 5; labelText = '極度幸運'; } 
+            else if (luckBB100 > 5) { level = 4; labelText = '幸運'; } 
+            else if (luckBB100 > -5) { level = 3; labelText = '普通'; } 
+            else if (luckBB100 > -15) { level = 2; labelText = '運氣不佳'; } 
+            else { level = 1; labelText = '極度倒楣'; }
+            
+            label.textContent = labelText;
+            for (let i = 0; i < level; i++) {
+                clovers[i].classList.add('active');
+            }
+        };
+        
+        const renderProfitChart = (fullHistory) => {
+            if (profitChart) {
+                profitChart.destroy();
+            }
+            if (fullHistory.length < 1) {
+                profitChartCanvas.parentElement.style.display = 'none';
+                return;
+            }
+            profitChartCanvas.parentElement.style.display = 'block';
+
+            fullHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            let cumulativeProfit = 0;
+            let cumulativeAllinEv = 0;
+            let cumulativeWinloss = 0;
+
+            const labels = ['Start', ...fullHistory.map(r => new Date(r.date).toLocaleDateString())];
+            
+            const profitData = [0, ...fullHistory.map(r => {
+                cumulativeProfit += r.metrics.actualProfit;
+                return cumulativeProfit;
+            })];
+            const allinEvData = [0, ...fullHistory.map(r => {
+                cumulativeAllinEv += (r.allinEV !== null ? r.allinEV : r.metrics.actualProfit);
+                return cumulativeAllinEv;
+            })];
+            const winlossData = [0, ...fullHistory.map(r => {
+                cumulativeWinloss += (r.winloss !== null ? r.winloss : r.metrics.actualProfit);
+                return cumulativeWinloss;
+            })];
+
+            const ctx = profitChartCanvas.getContext('2d');
+            profitChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '累積盈虧 ($)', // Actual Profit
+                        data: profitData,
+                        borderColor: '#3B82F6', // Blue
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    },
+                    {
+                        label: '累積Winloss ($)', // Pre-Rake, With Luck
+                        data: winlossData,
+                        borderColor: '#22C55E', // Green
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: '累積All-in EV ($)', // Pre-Rake, No Luck
+                        data: allinEvData,
+                        borderColor: '#F97316', // Orange
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { ticks: { color: '#9CA3AF' }, grid: { color: '#374151' } },
+                        x: { ticks: { color: '#9CA3AF' }, grid: { color: '#374151' } }
+                    },
+                    plugins: { legend: { labels: { color: '#D1D5DB' } } }
+                }
+            });
+        };
+
+        const updateBankrollAdvice = () => {
+            const bankroll = parseFloat(totalBankrollInput.value);
+            const bb = parseFloat(bigBlindInput.value);
+
+            if (isNaN(bankroll) || bankroll <= 0) {
+                bankrollAdviceEl.textContent = '請輸入總資金以進行風險評估。';
+                bankrollAdviceEl.className = 'text-sm text-gray-400 mt-2';
+                return;
+            }
+            
+            if (sessionInProgress && !isNaN(bb) && bb > 0) {
+                const buyInSize = 100 * bb;
+                const buyInsInBankroll = bankroll / buyInSize;
+                bankrollAdviceEl.textContent = `總資金可支撐 ${buyInsInBankroll.toFixed(1)} 次買入 (100BB)。`;
+                if (buyInsInBankroll < 20) {
+                     bankrollAdviceEl.className = 'text-sm text-red-400 mt-2';
+                } else if (buyInsInBankroll < 30) {
+                     bankrollAdviceEl.className = 'text-sm text-yellow-400 mt-2';
+                } else {
+                     bankrollAdviceEl.className = 'text-sm text-green-400 mt-2';
+                }
+            } else {
+                bankrollAdviceEl.textContent = `您的總資金為 $${bankroll.toFixed(2)}。`;
+                bankrollAdviceEl.className = 'text-sm text-green-400 mt-2';
+            }
+        };
+
+        const startSession = () => {
+            sessionInProgress = true;
+            startTime = new Date();
+            
+            inputFormWrapper.classList.remove('hidden');
+            document.getElementById('input-form').reset();
+            const history = getHistory();
+            const lastRecord = history.length > 0 ? history.sort((a, b) => new Date(b.date) - new Date(a.date))[0] : null;
+            if (lastRecord && lastRecord.platformEndCash) {
+                platformStartCashInput.value = lastRecord.platformEndCash;
+            }
+            
+            startSessionBtn.classList.add('hidden');
+            endSessionBtn.classList.remove('hidden');
+
+            timerInterval = setInterval(() => {
+                const elapsedSeconds = Math.floor((new Date() - startTime) / 1000);
+                sessionTimerEl.textContent = formatTime(elapsedSeconds);
+            }, 1000);
+            
+            updateBankrollAdvice();
+        };
+        
+        const endSession = () => {
+            const bigBlind = parseFloat(bigBlindInput.value);
+            const platformStartCash = parseFloat(platformStartCashInput.value);
+            const platformEndCash = parseFloat(platformEndCashInput.value);
+            const hands = handsInput.value ? parseInt(handsInput.value) : null;
+            const winloss = winlossInput.value ? parseFloat(winlossInput.value) : null;
+            const allinEV = allInEvInput.value ? parseFloat(allInEvInput.value) : null;
+
+            if (isNaN(bigBlind) || bigBlind <= 0) {
+                showModal("操作錯誤", "大盲注必須是個大於0的數字。"); return;
+            }
+            if (isNaN(platformStartCash) || isNaN(platformEndCash)) {
+                showModal("操作錯誤", "平台起始與最終資金為必填項。"); return;
+            }
+            
+            clearInterval(timerInterval);
+            const duration = Math.floor((new Date() - startTime) / 1000);
+
+            const record = {
+                id: Date.now(),
+                date: startTime.toISOString(),
+                duration,
+                bb: bigBlind,
+                platformStartCash,
+                platformEndCash,
+                hands,
+                winloss,
+                allinEV
+            };
+            const history = getHistory();
+            history.push(record);
+            saveHistory(history);
+
+            renderAll();
+            
+            sessionInProgress = false;
+            startTime = null;
+            timerInterval = null;
+            sessionTimerEl.textContent = "00:00:00";
+            inputFormWrapper.classList.add('hidden');
+            startSessionBtn.classList.remove('hidden');
+            endSessionBtn.classList.add('hidden');
+        };
+        
+        const exportData = () => {
+            const history = getHistory();
+            if (history.length === 0) {
+                showModal("提示", "沒有可匯出的歷史紀錄。");
+                return;
+            }
+            const headers = "date,duration,bb,platformStartCash,platformEndCash,hands,winloss,allinEV\n";
+            const csvContent = history.map(r => 
+                [r.date, r.duration, r.bb, r.platformStartCash, r.platformEndCash, r.hands || '', r.winloss || '', r.allinEV || ''].join(',')
+            ).join('\n');
+            
+            const blob = new Blob([headers + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `poker_history_${currentProfile}_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        const importData = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const actions = [
+                    { text: '確定匯入', class: 'btn-danger', action: () => {
+                        try {
+                            const rows = text.split('\n').slice(1);
+                            const newHistory = rows.filter(row => row.trim() !== '').map(row => {
+                                const cols = row.split(',');
+                                if (cols.length < 8) throw new Error("CSV文件欄位數量不足。");
+                                const record = {
+                                    date: cols[0],
+                                    duration: parseInt(cols[1]),
+                                    bb: parseFloat(cols[2]), 
+                                    platformStartCash: parseFloat(cols[3]), 
+                                    platformEndCash: parseFloat(cols[4]),
+                                    hands: cols[5] ? parseInt(cols[5]) : null,
+                                    winloss: cols[6] ? parseFloat(cols[6]) : null,
+                                    allinEV: cols[7] ? parseFloat(cols[7]) : null,
+                                    id: new Date(cols[0]).getTime() + Math.random(),
+                                };
+                                for (const key in record) {
+                                    if (record.hasOwnProperty(key) && typeof record[key] === 'number' && isNaN(record[key])) {
+                                        throw new Error(`欄位 '${key}' 發現無效數據: '${cols.join(',')}'`);
+                                    }
+                                }
+                                return record;
+                            });
+                            saveHistory(newHistory);
+                            renderAll();
+                            closeModal();
+                            showModal("成功", "資料匯入成功！");
+                        } catch (error) {
+                            showModal("錯誤", `匯入失敗: ${error.message}`);
+                            console.error("Import error:", error);
+                        } finally {
+                            importFile.value = '';
+                        }
+                    }},
+                    { text: '取消', class: 'btn-secondary', action: () => {
+                        importFile.value = '';
+                        closeModal();
+                    }}
+                ];
+                showModal("⚠️ 確認操作", `即將匯入資料到目前的帳戶 "${currentProfile}"。這將會覆蓋此帳戶的所有資料，確定嗎？`, actions);
+            };
+            reader.readAsText(file);
+        };
+
+        const getAIAnalysis = async () => {
+            const history = getHistory();
+            if (history.length === 0) {
+                showModal("提示", "沒有足夠的數據進行分析。請先記錄至少一場牌局。");
+                return;
+            }
+
+            aiLoader.classList.remove('hidden');
+            aiResult.classList.add('hidden');
+            aiAnalysisBtn.disabled = true;
+
+            const dashboardData = {
+                totalPl: document.getElementById('db-total-pl').textContent,
+                totalWinloss: document.getElementById('db-total-winloss') ? document.getElementById('db-total-winloss').textContent : 'N/A',
+                totalAllinEv: document.getElementById('db-total-allinev') ? document.getElementById('db-total-allinev').textContent : 'N/A',
+                totalLuckIndex: document.getElementById('db-luck-index') ? document.getElementById('db-luck-index').textContent : 'N/A',
+                totalRake: document.getElementById('db-total-rake').textContent,
+                avgHourly: document.getElementById('db-avg-hourly').textContent,
+            };
+
+            const recentSessions = history.slice(0, 5).map(r => {
+                const metrics = calculateMetrics(r);
+                return `日期: ${new Date(r.date).toLocaleDateString()}, 盈虧: $${metrics.actualProfit.toFixed(2)}, Winloss: $${r.winloss ? r.winloss.toFixed(2) : 'N/A'}, All-in EV: $${r.allinEV ? r.allinEV.toFixed(2) : 'N/A'}`;
+            }).join('\n');
+
+            const prompt = `
+你是一位頂尖的德州撲克數據分析教練。請根據以下數據，為這位玩家提供一份專業、深入且客製化的分析報告。這些數據來自玩家的追蹤軟體。
+
+**數據定義:**
+-   **實際盈虧:** 玩家最終口袋裡的錢的變化。
+-   **Winloss (綠線):** 不抽水的「實際」獲利。這條線已經包含了運氣成分。
+-   **All-in EV (橘線):** 不抽水的「期望」獲利。這條線代表玩家的純技術實力，撇除了運氣。
+
+**總體數據儀表板:**
+-   **總盈虧:** ${dashboardData.totalPl}
+-   **總Winloss:** ${dashboardData.totalWinloss}
+-   **總All-in EV:** ${dashboardData.totalAllinEv}
+-   **總支付水錢 (Winloss - 總盈虧):** ${dashboardData.totalRake}
+-   **總運氣指數 (Winloss - 總All-in EV):** ${dashboardData.totalLuckIndex} (正數代表運氣好，負數代表運氣差)
+-   **平均時薪:** ${dashboardData.avgHourly}
+
+**最近 5 場牌局紀錄:**
+${recentSessions}
+
+**分析要求 (請嚴格遵照此結構，並使用繁體中文):**
+1.  **⭐ 核心結論:** 根據三條曲線 (實際盈虧, Winloss, All-in EV) 的關係，給出最核心的結論。例如：「你的技術實力 (All-in EV) 顯示你是長期贏家，但近期運氣 (Winloss vs All-in EV) 和高額抽水 (Winloss vs 實際盈虧) 共同影響了你的最終收益。」
+2.  **🎲 運氣因素 (Winloss vs All-in EV):** 這是最純粹的運氣指標。分析這兩條線的差距，明確告訴玩家他近期是運氣好還是差。提醒他應專注於打出高的 All-in EV，因為長期來看 Winloss 會趨近於 All-in EV。
+3.  **💸 抽水影響 (Winloss vs 實際盈虧):** 這是最純粹的水錢指標。分析這兩條線的差距，告訴玩家撲克室抽水對他盈利的實際影響有多大。
+4.  **💡 actionable建議:** 提供 2-3 個具體的、可執行的改進建議。例如：「你的 All-in EV 曲線穩定上升，這是最重要的。但 Winloss 曲線遠低於它，證明你處於下風期。請務必堅持你目前的正確打法，不要因為運氣差而改變策略，回報終將到來。」或「你的 Winloss 和實際盈虧差距巨大，說明你被抽了高額的水錢。建議你評估當前牌局的Rake結構，或尋找Rakeback更高的平台。」
+
+請以鼓勵和專業的語氣撰寫，使用 markdown 格式和表情符號讓報告更清晰易讀。
+`;
+            
+            try {
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = "AIzaSyBasaBU3srwcOqVQoyT7uZmtXPa4NRi6gU"; // API Key will be injected by the environment
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                
+                let response;
+                let attempts = 0;
+                const maxAttempts = 5;
+                let delay = 1000;
+
+                while(attempts < maxAttempts) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (response.ok) break;
+                    } catch (error) {
+                        // Network or other fetch error
+                    }
+                    attempts++;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; // Exponential backoff
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error(`API request failed with status ${response?.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    aiResult.innerHTML = marked.parse(text);
+                } else {
+                    throw new Error("AI 未能生成有效的分析報告，請稍後再試。");
+                }
+
+            } catch (error) {
+                console.error("AI Analysis Error:", error);
+                aiResult.textContent = `分析失敗：${error.message}`;
+            } finally {
+                aiLoader.classList.add('hidden');
+                aiResult.classList.remove('hidden');
+                aiAnalysisBtn.disabled = false;
+            }
+        };
+
+        // --- Event Listeners ---
+        startSessionBtn.addEventListener('click', startSession);
+        endSessionBtn.addEventListener('click', endSession);
+        
+        exportBtn.addEventListener('click', exportData);
+        importFile.addEventListener('change', importData);
+        aiAnalysisBtn.addEventListener('click', getAIAnalysis);
+
+        totalBankrollInput.addEventListener('input', () => {
+            saveBankroll();
+            updateBankrollAdvice();
+        });
+        bigBlindInput.addEventListener('input', () => {
+            if (sessionInProgress) {
+                updateBankrollAdvice();
+            }
+        });
+        
+        profileSelect.addEventListener('change', (e) => switchProfile(e.target.value));
+        addProfileBtn.addEventListener('click', addProfile);
+        deleteProfileBtn.addEventListener('click', deleteProfile);
+        
+        // --- Initial Load ---
+        loadProfiles();
+    });
+    </script>
+</body>
+</html>

@@ -229,7 +229,7 @@
             <div class="input-group">
                 <label for="modelSelect">選擇 AI 模型:</label>
                 <select id="modelSelect" class="focus:border-blue-400">
-                    <option value="gemini-2.5-flash-preview-05-20">Gemini 2.5 Flash (預覽版 05-20)</option>
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                     <!-- 將來可以在這裡添加更多模型選項 -->
                 </select>
             </div>
@@ -237,10 +237,7 @@
             
             <label for="apiKeySelect">選擇 API Key 配置:</label>
             <select id="apiKeySelect" class="focus:border-blue-400">
-                <option value="AIzaSyBasaBU3srwcOqVQoyT7uZmtXPa4NRi6gU">TEST1 AIzaSyBasaBU3srwcOqVQoyT7uZmtXPa4NRi6gU)</option>
-                <option value="AIzaSyC_1HJbHryk0t9mwRSEJnlhjYDIzSuo8oY">TEST2 AIzaSyC_1HJbHryk0t9mwRSEJnlhjYDIzSuo8oY</option>
-                <option value="AIzaSyCOFOoppNQRakvBcKyKmWHEHpMBPODi9s4">TEST3 AIzaSyCOFOoppNQRakvBcKyKmWHEHpMBPODi9s4</option>
-                <option value="AIzaSyBl2ysPjnepR6exiYgeTnjim3IBEagTY8w">MY AIzaSyBl2ysPjnepR6exiYgeTnjim3IBEagTY8w</option>
+                <option value="">default api</option>
                 <option value="AIzaSyBl2ysPjnepR6exiYgeTnjim3IBEagTY9w">ERROR TEST</option>
                 <option value="manual">手動輸入 API Key</option> <!-- 新增手動輸入選項 -->
             </select>
@@ -449,6 +446,9 @@
                 try {
                     const response = await fetch(url, options);
                     if (response.status === 429) { // Too Many Requests
+                        if (i === retries - 1) {
+                            throw new Error(`API 已達請求上限，請稍後再試。 (API rate limit exceeded after ${retries} retries)`);
+                        }
                         console.warn(`API 限流，正在重試... (第 ${i + 1} 次)`);
                         await new Promise(res => setTimeout(res, delay));
                         delay *= 2; // 雙倍延遲
@@ -517,18 +517,40 @@
             }
             
             const selectedModel = modelSelect.value;
-            const selectedApiKey = apiKeySelect.value;
             const maxTokens = parseInt(maxTokensInput.value, 10);
 
-            // 使用選擇的 API Key 構建 URL
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${selectedApiKey}`;
+            let apiUrl;
+            let payload;
 
-            const payload = {
-                contents: contentsToSend,
-                generationConfig: {
-                    maxOutputTokens: maxTokens // 設定最大生成字數
-                }
-            };
+            if (apiKeySelect.value === "") { // 使用後端代理 (default api)
+                apiUrl = '/api/proxy/text'; // 指向我們自己的後端代理
+                payload = {
+                    prompt: userPrompt, // 代理只需要 prompt
+                    // 如果你的代理需要處理歷史紀錄，也需要傳遞
+                    // history: includeHistoryCheckbox.checked ? chatHistory.map(msg => ({ role: msg.role, parts: msg.parts })) : []
+                };
+                 // 注意：當使用代理時，我們需要確保發送的 payload 格式與代理期望的格式一致。
+                // 這裡我們假設代理期望的格式是 { prompt: "..." }。
+                // 如果要支持歷史紀錄，後端代理 `server.js` 也需要修改以接收和處理 `history`。
+                // 為了簡化，我們暫時只傳遞當前的 prompt。
+                const proxyContents = includeHistoryCheckbox.checked ? chatHistory.map(msg => ({ role: msg.role, parts: msg.parts })) : [{ role: "user", parts: [{ text: userPrompt }] }];
+                payload = {
+                    contents: proxyContents,
+                    generationConfig: {
+                        maxOutputTokens: maxTokens
+                    }
+                };
+
+
+            } else { // 直接呼叫 Google API
+                apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${currentApiKey}`;
+                payload = {
+                    contents: contentsToSend,
+                    generationConfig: {
+                        maxOutputTokens: maxTokens
+                    }
+                };
+            }
 
             try {
                 const response = await fetchWithExponentialBackoff(apiUrl, {
@@ -634,6 +656,7 @@
                 // 應用 Tailwind 樣式
                 input.className = 'focus:border-blue-400 mt-2 w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 outline-none transition duration-200 ease-in-out'; 
                 manualApiKeyInputContainer.appendChild(input);
+                
                 input.focus(); // 聚焦到新的輸入框
             }
         });
