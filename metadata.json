@@ -82,11 +82,11 @@
   },
   "api test key test.html": {
     "name": "AI API 測試器",
-    "desc": "多功能AI API測試平台，可選模型、配置API金鑰、設參數，並管理對話。",
+    "desc": "快速測試AI模型API，自訂API Key、模型與生成參數，支援對話歷史，助您高效調校與互動。",
     "tags": [
       "AI",
       "API測試",
-      "模型互動"
+      "參數配置"
     ]
   },
   "poker.html": {
