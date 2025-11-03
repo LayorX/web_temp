@@ -9,12 +9,12 @@
     ]
   },
   "AwesomeNoiseOut.html": {
-    "name": "智慧資訊過濾器",
-    "desc": "一個關於如何過濾假新聞與資訊噪音的專案願景，包含互動圖表與發展藍圖。",
+    "name": "智慧資訊過濾器，神仙濾鏡",
+    "desc": "為您高效篩除假新聞與資訊噪音，奪回注意力主導權，含互動圖表與發展藍圖。",
     "tags": [
-      "專案願景",
-      "數據視覺化",
-      "Chart.js"
+      "智慧過濾",
+      "資訊淨化",
+      "數據視覺化"
     ]
   },
   "GGPoker.html": {
@@ -73,11 +73,20 @@
   },
   "test-project.html": {
     "name": "CI/CD 元數據自動化專案",
-    "desc": "此專案自動化 GitHub Actions CI/CD 流程測試，偵測檔案變動、分析內容並生成元數據，確保 `metadata.json` 即時更新，提升開發效率。",
+    "desc": "此專案自動化 GitHub Actions CI/CD 流程，偵測檔案變動、分析內容並生成元數據，確保 `metadata.json` 即時更新，兼顧效率與測試彈性。",
     "tags": [
       "CI/CD",
       "自動化",
       "元數據管理"
+    ]
+  },
+  "api test key test.html": {
+    "name": "AI API 測試器",
+    "desc": "多功能AI API測試平台，可選模型、配置API金鑰、設參數，並管理對話。",
+    "tags": [
+      "AI",
+      "API測試",
+      "模型互動"
     ]
   }
 }
