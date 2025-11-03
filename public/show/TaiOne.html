@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaiOne 專案技術評估與發展建議書 (v2.0)</title>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 載入 Inter 字體 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 基本樣式設置 */
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f8f9fa; /* 淺灰色背景 */
+        }
+        
+        /* 為標題添加底線 */
+        h2 {
+            border-bottom: 2px solid #e2e8f0; /* 淺灰色底線 */
+            padding-bottom: 8px;
+            margin-top: 2.5rem; /* 增加章節間距 */
+            margin-bottom: 1.5rem; /* 標題和內容間距 */
+        }
+
+        /* 程式碼區塊樣式 - 優化版 */
+        .code-block {
+            background-color: #f3f4f6; /* 淺灰色背景 (優化) */
+            color: #1f2937; /* 深色文字 (優化) */
+            font-family: 'Fira Code', 'Courier New', monospace;
+            padding: 1rem; /* 調整 padding */
+            border-radius: 0.5rem; /* 圓角 */
+            display: block;         /* 新增: 確保為區塊元素 */
+            overflow-x: auto;       /* 新增: 允許水平滾動 (優化) */
+            font-size: 0.875rem; /* 稍小的字體 */
+            line-height: 1.6;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(0,0,0,0.03); /* 更柔和的陰影 */
+        }
+        /* 語法高亮樣式 - 淺色背景優化 */
+        .code-comment { color: #6b7280; font-style: italic; } /* 註解 - 灰色 */
+        .code-keyword { color: #7c3aed; } /* 關鍵字 - 紫色 */
+        .code-function { color: #2563eb; } /* 函式 - 藍色 */
+        .code-string { color: #16a34a; } /* 字串 - 綠色 */
+        .code-variable { color: #ca8a04; } /* 變數 - 琥珀色 */
+        .code-method { color: #059669; } /* 方法 - 綠色 */
+        .code-class { color: #ca8a04; } /* 類名 - 琥珀色 */
+        .code-yaml-key { color: #dc2626; } /* YAML 鍵 - 紅色 */
+        .code-yaml-value { color: #16a34a; } /* YAML 值 - 綠色 */
+        .code-punctuation { color: #4b5563; } /* 標點 - 深灰 */
+        .code-operator { color: #059669; } /* 運算符 - 綠色 */
+
+        /* 圖片網格錯誤處理 */
+        .aspect-square {
+            aspect-ratio: 1 / 1;
+        }
+        .img-fallback {
+            background-color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 0.875rem;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- 置頂導覽列 -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+        <nav class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <span class="text-xl font-bold text-gray-900">TaiOne 專案報告 (v2.0)</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#summary" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">執行摘要</a>
+                        <a href="#status" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">現狀分析</a>
+                        <a href="#modules" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">模組分析</a>
+                        <a href="#recommendations" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">改進建議</a>
+                        <a href="#future" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">未來發展</a>
+                        <a href="#conclusion" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">總結</a>
+                    </div>
+                </div>
+                <!-- 行動裝置選單按鈕 (可選) -->
+                <div class="md:hidden">
+                    <!-- 為了簡潔，此處暫不實作漢堡選單JS，保留空間 -->
+                </div>
+            </div>
+            <!-- 行動裝置上可滾動的選單 -->
+            <div class="md:hidden overflow-x-auto py-2 -mx-4 px-4">
+                <div class="flex items-baseline space-x-4 whitespace-nowrap">
+                    <a href="#summary" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">執行摘要</a>
+                    <a href="#status" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">現狀分析</a>
+                    <a href="#modules" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">模組分析</a>
+                    <a href="#recommendations" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">改進建議</a>
+                    <a href="#future" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">未來發展</a>
+                    <a href="#conclusion" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">總結</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 主內容區 -->
+    <main class="container mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+
+        <!-- 1. 標題與執行摘要 -->
+        <section id="summary" class="pt-8">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                <!-- 標題 -->
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">TaiOne 專案技術評估與發展建議書 (v2.0)</h1>
+                <div class="flex flex-wrap gap-x-8 gap-y-2 text-gray-500 mb-6">
+                    <span class="font-medium"><strong>報告日期:</strong> 2025年11月04日</span>
+                    <span class="font-medium"><strong>架構師:</strong> Gemini (Mentor)</span>
+                </div>
+
+                <!-- 圖片網格 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 my-8">
+                    <img src="https://i.meee.com.tw/ib3x1Ea.jpg" alt="專案圖片 1" class="aspect-square w-full h-auto object-cover rounded-lg shadow-md"
+                         onerror="this.outerHTML = '<div class=\'aspect-square img-fallback rounded-lg shadow-md\'>[圖片 1 載入失敗]</div>'">
+                    <img src="https://i.meee.com.tw/eOE7Jzd.png" alt="專案圖片 2" class="aspect-square w-full h-auto object-cover rounded-lg shadow-md"
+                         onerror="this.outerHTML = '<div class=\'aspect-square img-fallback rounded-lg shadow-md\'>[圖片 2 載入失敗]</div>'">
+                    <img src="https://i.meee.com.tw/cQ3jYAD.jpg" alt="專案圖片 3" class="aspect-square w-full h-auto object-cover rounded-lg shadow-md"
+                         onerror="this.outerHTML = '<div class=\'aspect-square img-fallback rounded-lg shadow-md\'>[圖片 3 載入失敗]</div>'">
+                    <img src="https://i.meee.com.tw/F26TBky.png" alt="專案圖片 4" class="aspect-square w-full h-auto object-cover rounded-lg shadow-md"
+                         onerror="this.outerHTML = '<div class=\'aspect-square img-fallback rounded-lg shadow-md\'>[圖片 4 載入失敗]</div>'">
+                </div>
+
+                <!-- 執行摘要 -->
+                <h2 class="text-3xl font-semibold text-gray-800">序言：執行摘要 (Executive Summary)</h2>
+                <div class="space-y-4 text-base leading-relaxed text-gray-700">
+                    <p>TaiOne 專案是一個基於現代化、高效能技術棧（Next.js, tRPC, Prisma）的高品質社群媒體應用程式原型。其架構清晰，程式碼基礎紮實，並已成功實現了自動化的 CI/CD 爬蟲流程。專案在型別安全、開發者體驗和核心功能實現上表現出色，展現了巨大的發展潛力。</p>
+                    <p>然而，專案目前也面臨著幾個關鍵的成長挑戰，主要集中在 <strong class="text-blue-600 font-semibold">自動化測試的缺失</strong> 和 <strong class="text-blue-600 font-semibold">CI/CD 流程的不完整</strong>。這些是技術債的早期信號，若不加以解決，將會隨著功能的擴展而顯著增加維護成本和迴歸風險。</p>
+                    <p>本報告旨在全面評估專案的當前狀態，並<strong class="text-blue-600 font-semibold">提供具體的程式碼級建議</strong>，提出一系列可執行的改進方案，以確保 TaiOne 在未來的開發道路上，能夠兼具<strong class="text-blue-600 font-semibold">快速迭代</strong>與<strong class="text-blue-600 font-semibold">長期穩定性</strong>。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. 專案現狀分析 -->
+        <section id="status">
+            <h2 class="text-3xl font-semibold text-gray-800">1. 專案現狀分析 (Project Status Analysis)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 1.1. 技術棧評估 -->
+                <div class="bg-white p-6 rounded-lg shadow-md transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900">1.1. 技術棧評估</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <span class="font-semibold text-green-600">優勢:</span>
+                            <p class="text-gray-700 text-sm">採用 T3 Stack，提供端對端型別安全。tRPC 消除 API 樣板程式碼，前後端資料交換效率高。</p>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-yellow-600">劣勢:</span>
+                            <p class="text-gray-700 text-sm">此技術棧對新進開發者有一定學習曲線。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1.2. 架構健壯性 -->
+                <div class="bg-white p-6 rounded-lg shadow-md transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900">1.2. 架構健壯性</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <span class="font-semibold text-green-600">優勢:</span>
+                            <p class="text-gray-700 text-sm">pnpm workspaces 的 Monorepo 架構清晰分離 `web` 與 `scraper`，可擴展性高。Prisma 提供強大 ORM。</p>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-red-600">劣勢:</span>
+                            <p class="text-gray-700 text-sm">核心資料同步流程 (從 `SourcePost` 到 `Post`) <strong class="font-bold">缺乏交易完整性</strong>，是目前最脆弱的一環。單點失敗可能導致資料狀態不一致。</p>
+                            <p class="text-gray-700 text-sm mt-2"><strong>問題點:</strong> 流程分散在 `sync-to-db.ts` 和 `create-posts.ts`。若後者失敗，`SourcePost` 狀態將與 `Post` 脫鉤。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 1.3. 程式碼品質 -->
+                <div class="bg-white p-6 rounded-lg shadow-md transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900">1.3. 程式碼品質</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <span class="font-semibold text-green-600">優勢:</span>
+                            <p class="text-gray-700 text-sm">配置 ESLint, Prettier, lint-staged 及嚴格 TypeScript 規則，確保風格統一和基礎品質。</p>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-red-600">劣勢:</span>
+                            <p class="text-gray-700 text-sm">程式碼中缺乏註解來解釋「為什麼」，特別是在複雜業務邏輯或 AI prompt 設計上。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 1.4. 測試覆蓋率 -->
+                <div class="bg-white p-6 rounded-lg shadow-md transition-shadow hover:shadow-lg border-l-4 border-red-500">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900">1.4. 測試覆蓋率</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <span class="font-semibold text-green-600">優勢:</span>
+                            <p class="text-gray-700 text-sm">暫無。</p>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-red-600">劣勢:</span>
+                            <p class="text-gray-700 text-sm"><strong class="font-bold text-lg">測試覆蓋率為 0%</strong>。這是目前專案面臨的<strong class="font-bold">最大風險</strong>。任何修改都缺乏信心，只能依賴手動測試，長期不可持續。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1.5. CI/CD 狀態 -->
+                <div class="bg-white p-6 rounded-lg shadow-md transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900">1.5. CI/CD 狀態</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <span class="font-semibold text-green-600">優勢:</span>
+                            <p class="text-gray-700 text-sm">已建立定時執行爬蟲的 GitHub Actions workflow。實現 Secrets/Variables 分離管理，具備日誌上傳功能。</p>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-red-600">劣勢:</span>
+                            <p class="text-gray-700 text-sm">目前僅為排程任務 (CD)，非完整 CI 流程。<strong class="font-bold">不會在 PR 時觸發</strong>，無法自動檢查 Linting, Type Checking 和執行測試。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 1.6. 文件完整性 -->
+                <div class="bg-white p-6 rounded-lg shadow-md transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900">1.6. 文件完整性</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <span class="font-semibold text-green-600">優勢:</span>
+                            <p class="text-gray-700 text-sm">`GEMINI.md` 作為動態更新的交接文件，提供了寶貴的演進上下文。</p>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-red-600">劣勢:</span>
+                            <p class="text-gray-700 text-sm">缺乏標準化開發者文件，如 `CONTRIBUTING.md` (貢獻指南) 和 `ARCHITECTURE.md` (架構決策紀錄)，增加新成員融入成本。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 3. 核心功能模組分析 -->
+        <section id="modules">
+            <h2 class="text-3xl font-semibold text-gray-800">2. 核心功能模組分析</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 2.1. 爬蟲模組 (Scraper) -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900">2.1. 爬蟲模組 (Scraper)</h3>
+                    <div class="space-y-3 text-sm">
+                        <p><strong class="text-gray-700">現狀:</strong> Reddit 爬蟲已從 Puppeteer 重構為 `snoowrap` 函式庫的穩定 API 呼叫，展現強大問題解決能力。</p>
+                        <p><strong class="text-gray-700">待辦:</strong> 其他爬蟲（如 PTT, BBC）可能仍用基礎方法，穩定性有待驗證與強化。</p>
+                    </div>
+                </div>
+                
+                <!-- 2.2. AI 內容生成 (AI Generation) -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900">2.2. AI 內容生成 (AI Generation)</h3>
+                    <div class="space-y-3 text-sm">
+                        <p><strong class="text-gray-700">現狀:</strong> 能利用 Gemini Vision 進行多模態內容生成，是專案一大亮點。</p>
+                        <p><strong class="text-gray-700">待辦:</strong> AI prompt 較單一，缺乏內容關聯性判斷，產出風格同質化。</p>
+                    </div>
+                </div>
+                
+                <!-- 2.3. 資料庫同步 (DB Sync) -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900">2.3. 資料庫同步 (DB Sync)</h3>
+                    <div class="space-y-3 text-sm">
+                        <p><strong class="text-gray-700">現狀:</strong> 能將爬取的 `SourcePost` 寫入資料庫。</p>
+                        <p><strong class="text-gray-700">待辦:</strong> 缺乏批次處理機制，大量資料時有效能瓶頸。且與 `create-posts` 流程缺乏交易保護。</p>
+                    </div>
+                </div>
+                
+                <!-- 2.4. 使用者關聯 (User Association) -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900">2.4. 使用者關聯 (User Association)</h3>
+                    <div class="space-y-3 text-sm">
+                        <p><strong class="text-gray-700">現狀:</strong> 透過 `ensureChannelUser` 機制，能為來源頻道建立「機器人」使用者，是正確的第一步。</p>
+                        <p><strong class="text-gray-700">待辦:</strong> 此為基礎實現，尚未形成完整的、可擴展的使用者系統。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 待改進建議 -->
+        <section id="recommendations">
+            <h2 class="text-3xl font-semibold text-gray-800">3. 待改進建議 (Actionable Recommendations)</h2>
+            <div class="space-y-8">
+                <!-- 建議 1: 導入整合測試框架 (Jest) -->
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg border-t-4 border-blue-600">
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-900">
+                        <span class="text-sm font-medium bg-red-100 text-red-700 py-1 px-3 rounded-full mr-2 align-middle">最高優先級</span>
+                        1. 導入整合測試框架 (Jest)
+                    </h3>
+                    <p class="text-gray-700 mb-2"><strong>行動:</strong> 立即為 `apps/scraper` 的核心邏輯編寫第一個單元測試。</p>
+                    <ol class="list-decimal list-inside text-gray-700 space-y-1 mb-4 text-sm">
+                        <li>安裝依賴: `pnpm --filter trend-scraper add -D jest @types/jest ts-jest`</li>
+                        <li>建立 `apps/scraper/jest.config.js`。</li>
+                        <li>建立 `apps/scraper/scripts/__tests__/reddit-trends.test.ts`。</li>
+                    </ol>
+                    <p class="text-gray-700 mb-4"><strong>理由:</strong> 測試是專案長期健康的基石。它能確保未來的重構和新功能不會破壞現有邏輯，是提升開發速度和信心的最佳投資。</p>
+                    <h4 class="font-semibold text-gray-800 mb-2">程式碼示例 (第一個測試):</h4>
+                    <pre><code class="language-typescript code-block"><span class="code-comment">// apps/scraper/scripts/__tests__/reddit-trends.test.ts</span>
+<span class="code-keyword">import</span> <span class="code-variable">snoowrap</span> <span class="code-keyword">from</span> <span class="code-string">'snoowrap'</span><span class="code-punctuation">;</span>
+<span class="code-comment">// (此處應將原 reddit-trends.ts 的邏輯重構為可匯出的函式)</span>
+<span class="code-keyword">import</span> <span class="code-punctuation">{</span> <span class="code-function">fetchRedditDataWithSnoowrap</span> <span class="code-punctuation">}</span> <span class="code-keyword">from</span> <span class="code-string">'../reddit-trends'</span><span class="code-punctuation">;</span>
+
+<span class="code-comment">// 模擬 snoowrap 函式庫</span>
+<span class="code-function">jest</span><span class="code-punctuation">.</span><span class="code-method">mock</span><span class="code-punctuation">(</span><span class="code-string">'snoowrap'</span><span class="code-punctuation">);</span>
+
+<span class="code-function">describe</span><span class="code-punctuation">(</span><span class="code-string">'Reddit Scraper'</span><span class="code-punctuation">,</span> <span class="code-punctuation">()</span> <span class="code-operator">=></span> <span class="code-punctuation">{</span>
+  <span class="code-function">it</span><span class="code-punctuation">(</span><span class="code-string">'should fetch and transform hot posts correctly'</span><span class="code-punctuation">,</span> <span class="code-keyword">async</span> <span class="code-punctuation">()</span> <span class="code-operator">=></span> <span class="code-punctuation">{</span>
+    <span class="code-comment">// 準備模擬資料</span>
+    <span class="code-keyword">const</span> <span class="code-variable">mockPost</span> <span class="code-operator">=</span> <span class="code-punctuation">{</span> <span class="code-variable">title</span><span class="code-punctuation">:</span> <span class="code-string">'Test Post'</span><span class="code-punctuation">,</span> <span class="code-function">toJSON</span><span class="code-punctuation">:</span> <span class="code-punctuation">()</span> <span class="code-operator">=></span> <span class="code-punctuation">({</span> <span class="code-variable">title</span><span class="code-punctuation">:</span> <span class="code-string">'Test Post'</span> <span class="code-punctuation">})</span> <span class="code-punctuation">};</span>
+    <span class="code-keyword">const</span> <span class="code-variable">mockGetHot</span> <span class="code-operator">=</span> <span class="code-function">jest</span><span class="code-punctuation">.</span><span class="code-method">fn</span><span class="code-punctuation">().</span><span class="code-method">mockResolvedValue</span><span class="code-punctuation">([</span><span class="code-variable">mockPost</span><span class="code-punctuation">]);</span>
+    <span class="code-punctuation">(</span><span class="code-class">snoowrap</span><span class="code-punctuation">.</span><span class="code-variable">prototype</span><span class="code-punctuation">.</span><span class="code-variable">getHot</span> <span class="code-keyword">as</span> <span class="code-class">jest</span><span class="code-punctuation">.</span><span class="code-class">Mock</span><span class="code-punctuation">)</span> <span class="code-operator">=</span> <span class="code-variable">mockGetHot</span><span class="code-punctuation">;</span>
+
+    <span class="code-keyword">const</span> <span class="code-variable">r</span> <span class="code-operator">=</span> <span class="code-keyword">new</span> <span class="code-class">snoowrap</span><span class="code-punctuation">({</span>
+      <span class="code-comment">/* ...mock credentials... */</span>
+    <span class="code-punctuation">});</span>
+    <span class="code-keyword">const</span> <span class="code-variable">source</span> <span class="code-operator">=</span> <span class="code-punctuation">{</span> <span class="code-variable">subreddit</span><span class="code-punctuation">:</span> <span class="code-string">'all'</span><span class="code-punctuation">,</span> <span class="code-variable">limit</span><span class="code-punctuation">:</span> <span class="code-number">1</span><span class="code-punctuation">,</span> <span class="code-variable">filename</span><span class="code-punctuation">:</span> <span class="code-string">''</span><span class="code-punctuation">,</span> <span class="code-variable">description</span><span class="code-punctuation">:</span> <span class="code-string">''</span> <span class="code-punctuation">};</span>
+
+    <span class="code-comment">// 執行函式</span>
+    <span class="code-keyword">const</span> <span class="code-variable">result</span> <span class="code-operator">=</span> <span class="code-keyword">await</span> <span class="code-function">fetchRedditDataWithSnoowrap</span><span class="code-punctuation">(</span><span class="code-variable">r</span><span class="code-punctuation">,</span> <span class="code-variable">source</span><span class="code-punctuation">);</span>
+
+    <span class="code-comment">// 驗證結果</span>
+    <span class="code-function">expect</span><span class="code-punctuation">(</span><span class="code-variable">mockGetHot</span><span class="code-punctuation">).</span><span class="code-method">toHaveBeenCalledWith</span><span class="code-punctuation">(</span><span class="code-string">'all'</span><span class="code-punctuation">,</span> <span class="code-punctuation">{</span> <span class="code-variable">limit</span><span class="code-punctuation">:</span> <span class="code-number">1</span> <span class="code-punctuation">});</span>
+    <span class="code-function">expect</span><span class="code-punctuation">(</span><span class="code-variable">result</span><span class="code-punctuation">.</span><span class="code-variable">data</span><span class="code-punctuation">.</span><span class="code-variable">children</span><span class="code-punctuation">[</span><span class="code-number">0</span><span class="code-punctuation">].</span><span class="code-variable">data</span><span class="code-punctuation">.</span><span class="code-variable">title</span><span class="code-punctuation">).</span><span class="code-method">toBe</span><span class="code-punctuation">(</span><span class="code-string">'Test Post'</span><span class="code-punctuation">);</span>
+  <span class="code-punctuation">});</span>
+<span class="code-punctuation">});</span>
+</code></pre>
+                </div>
+                
+                <!-- 建議 2: 建立完整的 CI 流程 -->
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg border-t-4 border-blue-500">
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-900">
+                        <span class="text-sm font-medium bg-orange-100 text-orange-700 py-1 px-3 rounded-full mr-2 align-middle">高優先級</span>
+                        2. 建立完整的 CI 流程
+                    </h3>
+                    <p class="text-gray-700 mb-2"><strong>行動:</strong> 在 `.github/workflows/` 目錄下建立一個新的 `ci.yml` 檔案。</p>
+                    <p class="text-gray-700 mb-4"><strong>理由:</strong> 將品質檢查自動化，確保任何進入主分支的程式碼都符合專案的品質標準，從源頭上杜絕錯誤。</p>
+                    <h4 class="font-semibold text-gray-800 mb-2">程式碼示例 (ci.yml):</h4>
+                    <pre><code class="language-yaml code-block"><span class="code-yaml-key">name</span><span class="code-punctuation">:</span> <span class="code-yaml-value">Continuous Integration</span>
+
+<span class="code-yaml-key">on</span><span class="code-punctuation">:</span>
+  <span class="code-yaml-key">pull_request</span><span class="code-punctuation">:</span>
+    <span class="code-yaml-key">branches</span><span class="code-punctuation">:</span> <span class="code-punctuation">[</span><span class="code-yaml-value">main</span><span class="code-punctuation">]</span>
+
+<span class="code-yaml-key">jobs</span><span class="code-punctuation">:</span>
+  <span class="code-yaml-key">quality_check</span><span class="code-punctuation">:</span>
+    <span class="code-yaml-key">name</span><span class="code-punctuation">:</span> <span class="code-yaml-value">Code Quality Check</span>
+    <span class="code-yaml-key">runs-on</span><span class="code-punctuation">:</span> <span class="code-yaml-value">ubuntu-latest</span>
+    <span class="code-yaml-key">steps</span><span class="code-punctuation">:</span>
+      <span class="code-punctuation">-</span> <span class="code-yaml-key">uses</span><span class="code-punctuation">:</span> <span class="code-yaml-value">actions/checkout@v4</span>
+      <span class="code-punctuation">-</span> <span class="code-yaml-key">uses</span><span class="code-punctuation">:</span> <span class="code-yaml-value">pnpm/action-setup@v4</span>
+      <span class="code-punctuation">-</span> <span class="code-yaml-key">uses</span><span class="code-punctuation">:</span> <span class="code-yaml-value">actions/setup-node@v4</span>
+        <span class="code-yaml-key">with</span><span class="code-punctuation">:</span>
+          <span class="code-yaml-key">node-version</span><span class="code-punctuation">:</span> <span class="code-string">'20'</span>
+          <span class="code-yaml-key">cache</span><span class="code-punctuation">:</span> <span class="code-string">'pnpm'</span>
+
+      <span class="code-punctuation">-</span> <span class="code-yaml-key">name</span><span class="code-punctuation">:</span> <span class="code-yaml-value">Install dependencies</span>
+        <span class="code-yaml-key">run</span><span class="code-punctuation">:</span> <span class="code-yaml-value">pnpm install --frozen-lockfile</span>
+
+      <span class="code-punctuation">-</span> <span class="code-yaml-key">name</span><span class="code-punctuation">:</span> <span class="code-yaml-value">Lint</span>
+        <span class="code-yaml-key">run</span><span class="code-punctuation">:</span> <span class="code-yaml-value">pnpm lint</span>
+
+      <span class="code-punctuation">-</span> <span class="code-yaml-key">name</span><span class="code-punctuation">:</span> <span class="code-yaml-value">Type Check</span>
+        <span class="code-yaml-key">run</span><span class="code-punctuation">:</span> <span class="code-yaml-value">pnpm --filter web tsc --noEmit && pnpm --filter trend-scraper tsc --noEmit</span>
+
+      <span class="code-punctuation">-</span> <span class="code-yaml-key">name</span><span class="code-punctuation">:</span> <span class="code-yaml-value">Run Tests</span>
+        <span class="code-yaml-key">run</span><span class="code-punctuation">:</span> <span class="code-yaml-value">pnpm test</span>
+</code></pre>
+                </div>
+
+                <!-- 建議 3: 整合結構化日誌 (pino) -->
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg border-t-4 border-blue-400">
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-900">
+                        <span class="text-sm font-medium bg-yellow-100 text-yellow-700 py-1 px-3 rounded-full mr-2 align-middle">中優先級</span>
+                        3. 整合結構化日誌 (pino)
+                    </h3>
+                    <p class="text-gray-700 mb-2"><strong>行動:</strong> 為爬蟲專案引入 `pino`，並取代 `console.log`。</p>
+                    <ol class="list-decimal list-inside text-gray-700 space-y-1 mb-4 text-sm">
+                        <li>安裝依賴: `pnpm --filter trend-scraper add pino`</li>
+                        <li>在腳本頂部初始化 logger，並替換 `console.log`。</li>
+                    </ol>
+                    <p class="text-gray-700 mb-4"><strong>理由:</strong> 結構化日誌 (JSON 格式) 易於機器解析，方便未來接入日誌聚合系統 (如 Logtail, Datadog)，並提供更豐富的上下文 (如時間、嚴重級別)。</p>
+                    <h4 class="font-semibold text-gray-800 mb-2">程式碼示例 (日誌替換):</h4>
+                    <pre><code class="language-typescript code-block"><span class="code-comment">// Before:</span>
+<span class="code-function">console</span><span class="code-punctuation">.</span><span class="code-method">log</span><span class="code-punctuation">(</span><span class="code-string">`🌐 正在抓取 r/<span class="code-variable">${subreddit}</span> 的熱門文章...`</span><span class="code-punctuation">);</span>
+
+<span class="code-comment">// After:</span>
+<span class="code-keyword">import</span> <span class="code-variable">pino</span> <span class="code-keyword">from</span> <span class="code-string">'pino'</span><span class="code-punctuation">;</span>
+<span class="code-keyword">const</span> <span class="code-variable">logger</span> <span class="code-operator">=</span> <span class="code-function">pino</span><span class="code-punctuation">();</span>
+
+<span class="code-variable">logger</span><span class="code-punctuation">.</span><span class="code-method">info</span><span class="code-punctuation">(</span><span class="code-punctuation">{</span> <span class="code-variable">subreddit</span> <span class="code-punctuation">},</span> <span class="code-string">`正在抓取 r/<span class="code-variable">${subreddit}</span> 的熱門文章...`</span><span class="code-punctuation">);</span>
+</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 未來發展方向與架構建議 -->
+        <section id="future">
+            <h2 class="text-3xl font-semibold text-gray-800">4. 未來發展方向與架構建議</h2>
+            <div class="space-y-8">
+                <!-- 4.1. [v1.0] 資料庫穩健性：引入交易 -->
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-900">
+                        <span class="text-sm font-medium bg-gray-200 text-gray-700 py-1 px-3 rounded-full mr-2 align-middle">v1.0</span>
+                        資料庫穩健性：引入交易
+                    </h3>
+                    <p class="text-gray-700 mb-2"><strong>目標:</strong> 確保資料寫入的原子性，解決目前 `sync-to-db` 和 `create-posts` 流程分離的脆弱性。</p>
+                    <p class="text-gray-700 mb-4"><strong>架構建議:</strong> 將兩個腳本的邏輯合併，並使用 `prisma.$transaction` 將「建立 `Post`」和「更新 `SourcePost` 狀態」包裝在同一個交易中。</p>
+                    <h4 class="font-semibold text-gray-800 mb-2">程式碼示例 (交易邏輯):</h4>
+                    <pre><code class="language-typescript code-block"><span class="code-keyword">import</span> <span class="code-punctuation">{</span> <span class="code-class">PrismaClient</span> <span class="code-punctuation">}</span> <span class="code-keyword">from</span> <span class="code-string">'@prisma/client'</span><span class="code-punctuation">;</span>
+<span class="code-keyword">const</span> <span class="code-variable">prisma</span> <span class="code-operator">=</span> <span class="code-keyword">new</span> <span class="code-class">PrismaClient</span><span class="code-punctuation">();</span>
+
+<span class="code-keyword">async</span> <span class="code-keyword">function</span> <span class="code-function">createPostFromSource</span><span class="code-punctuation">(</span><span class="code-variable">sourcePost</span><span class="code-punctuation">)</span> <span class="code-punctuation">{</span>
+  <span class="code-comment">// 1. 呼叫 AI 生成內容</span>
+  <span class="code-keyword">const</span> <span class="code-variable">aiContent</span> <span class="code-operator">=</span> <span class="code-keyword">await</span> <span class="code-function">generateContentFromAI</span><span class="code-punctuation">(</span><span class="code-variable">sourcePost</span><span class="code-punctuation">);</span>
+
+  <span class="code-comment">// 2. 在一個交易中完成資料庫寫入</span>
+  <span class="code-keyword">try</span> <span class="code-punctuation">{</span>
+    <span class="code-keyword">const</span> <span class="code-variable">result</span> <span class="code-operator">=</span> <span class="code-keyword">await</span> <span class="code-variable">prisma</span><span class="code-punctuation">.</span><span class="code-variable">$transaction</span><span class="code-punctuation">(</span><span class="code-keyword">async</span> <span class="code-punctuation">(</span><span class="code-variable">tx</span><span class="code-punctuation">)</span> <span class="code-operator">=></span> <span class="code-punctuation">{</span>
+      <span class="code-comment">// 建立新文章</span>
+      <span class="code-keyword">const</span> <span class="code-variable">newPost</span> <span class="code-operator">=</span> <span class="code-keyword">await</span> <span class="code-variable">tx</span><span class="code-punctuation">.</span><span class="code-variable">post</span><span class="code-punctuation">.</span><span class="code-method">create</span><span class="code-punctuation">({</span>
+        <span class="code-variable">data</span><span class="code-punctuation">:</span> <span class="code-punctuation">{</span>
+          <span class="code-variable">content</span><span class="code-punctuation">:</span> <span class="code-variable">aiContent</span><span class="code-punctuation">,</span>
+          <span class="code-variable">authorId</span><span class="code-punctuation">:</span> <span class="code-variable">sourcePost</span><span class="code-punctuation">.</span><span class="code-variable">channelUserId</span><span class="code-punctuation">,</span>
+          <span class="code-comment">// ... 其他欄位</span>
+        <span class="code-punctuation">},</span>
+      <span class="code-punctuation">});</span>
+
+      <span class="code-comment">// 更新來源文章狀態</span>
+      <span class="code-keyword">await</span> <span class="code-variable">tx</span><span class="code-punctuation">.</span><span class="code-variable">sourcePost</span><span class="code-punctuation">.</span><span class="code-method">update</span><span class="code-punctuation">({</span>
+        <span class="code-variable">where</span><span class="code-punctuation">:</span> <span class="code-punctuation">{</span> <span class="code-variable">id</span><span class="code-punctuation">:</span> <span class="code-variable">sourcePost</span><span class="code-punctuation">.</span><span class="code-variable">id</span> <span class="code-punctuation">},</span>
+        <span class="code-variable">data</span><span class="code-punctuation">:</span> <span class="code-punctuation">{</span> <span class="code-variable">status</span><span class="code-punctuation">:</span> <span class="code-string">'PROCESSED'</span> <span class="code-punctuation">},</span> <span class="code-comment">// 假設新增一個 status 欄位</span>
+      <span class="code-punctuation">});</span>
+
+      <span class="code-keyword">return</span> <span class="code-variable">newPost</span><span class="code-punctuation">;</span>
+    <span class="code-punctuation">});</span>
+    <span class="code-variable">logger</span><span class="code-punctuation">.</span><span class="code-method">info</span><span class="code-punctuation">(</span><span class="code-punctuation">{</span> <span class="code-variable">postId</span><span class="code-punctuation">:</span> <span class="code-variable">result</span><span class="code-punctuation">.</span><span class="code-variable">id</span><span class="code-punctuation">,</span> <span class="code-variable">sourcePostId</span><span class="code-punctuation">:</span> <span class="code-variable">sourcePost</span><span class="code-punctuation">.</span><span class="code-variable">id</span> <span class="code-punctuation">},</span> <span class="code-string">'成功建立文章並更新來源狀態'</span><span class="code-punctuation">);</span>
+  <span class="code-punctuation">}</span> <span class="code-keyword">catch</span> <span class="code-punctuation">(</span><span class="code-variable">error</span><span class="code-punctuation">)</span> <span class="code-punctuation">{</span>
+    <span class="code-variable">logger</span><span class="code-punctuation">.</span><span class="code-method">error</span><span class="code-punctuation">(</span><span class="code-punctuation">{</span> <span class="code-variable">sourcePostId</span><span class="code-punctuation">:</span> <span class="code-variable">sourcePost</span><span class="code-punctuation">.</span><span class="code-variable">id</span><span class="code-punctuation">,</span> <span class="code-variable">error</span> <span class="code-punctuation">},</span> <span class="code-string">'文章建立交易失敗'</span><span class="code-punctuation">);</span>
+  <span class="code-punctuation">}</span>
+<span class="code-punctuation">}</span>
+</code></pre>
+                </div>
+                
+                <!-- 4.2. [v1.0] 內容生成智慧化 -->
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-900">
+                        <span class="text-sm font-medium bg-gray-200 text-gray-700 py-1 px-3 rounded-full mr-2 align-middle">v1.0</span>
+                        內容生成智慧化
+                    </h3>
+                    <p class="text-gray-700 mb-2"><strong>目標:</strong> 提升 AI 內容的品質與多樣性。</p>
+                    <p class="text-gray-700 mb-4"><strong>架構建議:</strong> 設計一個「Prompt 策略引擎」。根據 `SourcePost` 的特性 (如是否有圖、標題長度、內容摘要等)，動態選擇不同的 Prompt 模板 (如 `image-focused-prompt.txt`, `long-form-prompt.txt`)，並傳遞給 AI。</p>
+                </div>
+                
+                <!-- 4.3. [v2.0] 擴展爬蟲來源 -->
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-900">
+                        <span class="text-sm font-medium bg-gray-200 text-gray-700 py-1 px-3 rounded-full mr-2 align-middle">v2.0</span>
+                        擴展爬蟲來源
+                    </h3>
+                    <p class="text-gray-700 mb-2"><strong>目標:</strong> 增加內容的多樣性與廣度。</p>
+                    <p class="text-gray-700 mb-4"><strong>架構建議:</strong> 建立一個標準化的爬蟲介面 (Interface)。每個新的爬蟲來源都實作這個介面，定義 `fetch` 和 `transform` 方法。這樣可以讓主流程以統一的方式調用不同的爬蟲，降低複雜度。</p>
+                    <h4 class="font-semibold text-gray-800 mb-2">程式碼示例 (爬蟲介面):</h4>
+                    <pre><code class="language-typescript code-block"><span class="code-keyword">interface</span> <span class="code-class">Scraper</span> <span class="code-punctuation">{</span>
+  <span class="code-variable">sourceType</span><span class="code-punctuation">:</span> <span class="code-class">string</span><span class="code-punctuation">;</span>
+  <span class="code-function">fetch</span><span class="code-punctuation">():</span> <span class="code-class">Promise</span><span class="code-punctuation"><</span><span class="code-class">RawData</span><span class="code-punctuation">[]>;</span>
+  <span class="code-function">transform</span><span class="code-punctuation">(</span><span class="code-variable">rawData</span><span class="code-punctuation">:</span> <span class="code-class">RawData</span><span class="code-punctuation">):</span> <span class="code-class">SourcePostInput</span><span class="code-punctuation">;</span>
+<span class="code-punctuation">}</span>
+
+<span class="code-keyword">class</span> <span class="code-class">RedditScraper</span> <span class="code-keyword">implements</span> <span class="code-class">Scraper</span> <span class="code-punctuation">{</span>
+  <span class="code-comment">// ... 實作</span>
+<span class="code-punctuation">}</span>
+
+<span class="code-keyword">class</span> <span class="code-class">PttScraper</span> <span class="code-keyword">implements</span> <span class="code-class">Scraper</span> <span class="code-punctuation">{</span>
+  <span class="code-comment">// ... 實作</span>
+<span class="code-punctuation">}</span>
+</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. 總結 -->
+        <section id="conclusion" class="pb-16">
+            <h2 class="text-3xl font-semibold text-gray-800">5. 總結 (Conclusion)</h2>
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                <div class="space-y-4 text-base leading-relaxed text-gray-700">
+                    <p>TaiOne 專案的基礎非常出色，技術選型現代，程式碼品質良好。目前正處於從「原型開發」邁向「可持續發展」的關鍵轉捩點。</p>
+                    <p>我們近期在 CI/CD 和爬蟲穩定性上取得的突破，已經為專案的下一階段奠定了堅實的基礎。接下來的重心應 <strong class="text-blue-600 font-semibold">立即轉向自動化測試的建立</strong>，這是確保專案能夠健康、快速成長的最重要一步。</p>
+                    <p class="font-semibold text-gray-800">只要我們能持續地、有紀律地償還現有的技術債，並按照本報告提供的藍圖穩步前行，TaiOne 專案的未來無可限量。</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 頁腳 -->
+    <footer class="text-center py-8 text-gray-500 text-sm">
+        <p>&copy; 2025 TaiOne Project Assessment. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
+
+
