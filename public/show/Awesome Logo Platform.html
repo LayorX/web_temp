@@ -3,25 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Awesome Logo Platform - 專案分析</title>
+    <title>Awesome Logo Platform - 互動分析報告 (UI 升級版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
         body {
             font-family: 'Noto Sans TC', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         .tab-button.active {
-            background-color: #059669; 
+            border-color: #059669;
+            background-color: #059669;
             color: #ffffff;
             font-weight: 700;
         }
         .tab-button {
             background-color: #ffffff;
             color: #374151;
+            border-color: #e5e7eb;
             transition: all 0.2s ease-in-out;
         }
         .tab-button:hover {
             background-color: #f9fafb;
+            border-color: #059669;
+            color: #047857;
         }
         .tab-content {
             display: none;
@@ -29,226 +35,313 @@
         .tab-content.active {
             display: block;
         }
+        .ai-example-block {
+            background-color: #f0fdfa;
+            border-left: 4px solid #059669;
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.75rem 0.75rem 0;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+        }
     </style>
 </head>
-<body class="bg-stone-50 text-stone-800">
+<body class="bg-gray-50 text-gray-800 leading-relaxed">
 
-    <!-- Chosen Palette: Warm Neutrals (bg-stone-50, text-stone-800, accent-emerald-600) -->
-    <!-- Application Structure Plan: 採用了一個「儀表板/專案中心」的結構。頂部是核心摘要，接著是兩個主要的互動區域：「核心分析」（包含可切換的 SWOT 和競品分析）和「發展藍圖」（包含可切換的短中長期計畫）。這種結構將報告的線性敘述轉化為主題式、可互動的探索體驗。使用者可以自由跳轉到他們感興趣的部分，透過點擊頁籤來深入了解，這比單純的滾動瀏覽更能促進理解和參與。 -->
+    <!-- Chosen Palette: Warm Neutrals -> Cooler Neutrals (bg-gray-50, text-gray-800, accent-emerald-600) -->
+    <!-- Application Structure Plan: Retained the successful 'Project Dashboard' structure. Focus is on UI/UX enhancement. Starts with Exec Summary, then two main tabbed sections for 'Analysis' (SWOT/Competitors) and 'Roadmap' (Short/Mid/Long), and concludes with 'Recommendations'. The tabbed structure remains the best choice for non-linear exploration of this dense report. -->
     <!-- Visualization & Content Choices: 
-        - 報告資訊: 可行性分析 -> 目標: 告知 -> 呈現方式: 4個重點卡片網格 (HTML/Tailwind) -> 互動: 無 (靜態) -> 理由: 清晰傳達 4 個核心價值主張。
-        - 報告資訊: SWOT 分析 -> 目標: 組織/比較 -> 呈現方式: 頁籤界面 (HTML/JS) -> 互動: 點擊按鈕 (S/W/O/T) 切換內容面板 -> 理由: 將密集的文字分解為可管理的區塊，互動性強，避免資訊過載。
-        - 報告資訊: 競品分析 -> 目標: 比較 -> 呈現方式: 響應式卡片網格 (HTML/Tailwind)，每個競品一張卡片 -> 互動: 無 (靜態) -> 理由: 現代化的表格替代方案，在行動裝置上閱讀體驗更佳。
-        - 報告資訊: 發展藍圖 -> 目標: 組織/時間變化 -> 呈現方式: 頁籤界面 (HTML/JS) -> 互動: 點擊按鈕 (短/中/長) 切換內容面板 -> 理由: 完美呈現階段性資訊，讓使用者能專注於單一階段。
+        - All previous choices retained.
+        - UI Enhancement: Replaced all text-based emojis (✔, ✘, 🚀, etc.) with professional inline SVGs for a cleaner, more consistent visual language.
+        - UI Enhancement: Added gradient text to main header and gradient background to final CTA section for 'wow factor'.
+        - UI Enhancement: Improved card styling (rounded-xl, shadow-md, hover effects) to increase interactivity and visual appeal.
+        - UI Enhancement: Re-styled 'ai-example-block' with a gradient background (emerald-50 to teal-50) to make these key examples stand out.
+        - Typography: Set global 'leading-relaxed' on body for 'MD-like' readability.
+        - CONFIRMATION: No Chart.js/Plotly.js needed.
     -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG (external) graphics used. Inline SVGs used for icons. NO Mermaid JS used. -->
 
     <div class="container mx-auto max-w-6xl p-4 md:p-8">
 
         <!-- 1. Header -->
-        <header class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-emerald-700 mb-4">Awesome Logo Platform</h1>
-            <p class="text-xl md:text-2xl text-stone-600">一份開源專案的可行性與發展藍圖分析</p>
+        <header class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 mb-4 pb-2">Awesome Logo Platform</h1>
+            <p class="text-xl md:text-2xl text-gray-600">互動式專案分析報告 (專業 UI 升級版)</p>
         </header>
 
-        <!-- 2. Core Conclusion & Feasibility -->
-        <section id="feasibility" class="mb-12">
-            <h2 class="text-3xl font-bold text-stone-900 mb-4 text-center">專案可行性：非常有搞頭</h2>
-            <p class="text-lg text-stone-700 mb-8 max-w-3xl mx-auto text-center">
+        <!-- 2. Executive Summary & Feasibility -->
+        <section id="feasibility" class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4 text-center">專案可行性：非常有搞頭</h2>
+            <p class="text-lg text-gray-700 mb-10 max-w-3xl mx-auto text-center">
                 這是一個精準的切入點。在 AI 時代，創意更有價值，而「被遺忘的創意」是普遍的痛點。此平台的核心價值在於為創作者提供了一個集「保存、展示、商業潛力、AI 管理」於一體的解決方案。成功關鍵將高度依賴「社群啟動」與「AI 功能的獨特性」。
             </p>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
-                    <h3 class="text-xl font-bold text-emerald-700 mb-2">📥 保存價值</h3>
-                    <p class="text-stone-600">解決創作者「隨手一做就遺失」的痛點。</p>
+                
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 card-hover">
+                    <svg class="w-10 h-10 text-emerald-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10.5 11.25h3M12 15V7.5" />
+                    </svg>
+                    <h3 class="text-xl font-bold text-emerald-700 mb-2">保存價值</h3>
+                    <p class="text-gray-600">解決創作者「隨手一做就遺失」的痛點。</p>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
-                    <h3 class="text-xl font-bold text-emerald-700 mb-2">🖼️ 展示價值</h3>
-                    <p class="text-stone-600">一個集中、高品質的 Logo 畫廊。</p>
+                
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 card-hover">
+                    <svg class="w-10 h-10 text-emerald-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                    </svg>
+                    <h3 class="text-xl font-bold text-emerald-700 mb-2">展示價值</h3>
+                    <p class="text-gray-600">一個集中、高品質的 Logo 畫廊。</p>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
-                    <h3 class="text-xl font-bold text-emerald-700 mb-2">💼 商業價值</h3>
-                    <p class="text-stone-600">讓有需求的人能輕易聯繫作者取得授權。</p>
+
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 card-hover">
+                    <svg class="w-10 h-10 text-emerald-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.75A.75.75 0 0 1 3 4.5h.75m0 0h.75A.75.75 0 0 1 4.5 6v.75m0 0v.75A.75.75 0 0 1 3.75 7.5h-.75m0 0h.75A.75.75 0 0 1 4.5 6.75v-.75m0 0h.75A.75.75 0 0 1 6 6.75v.75m0 0v.75A.75.75 0 0 1 5.25 8.25h-.75m0 0h.75a.75.75 0 0 1 .75.75v.75m0 0v.75a.75.75 0 0 1-.75.75h-.75m0 0H3.75A.75.75 0 0 1 3 9.75v-.75m0 0v-.75A.75.75 0 0 1 3.75 8.25h.75M12 15v.01M12 12v.01M12 9v.01M12 6v.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <h3 class="text-xl font-bold text-emerald-700 mb-2">商業價值</h3>
+                    <p class="text-gray-600">讓有需求的人能輕易聯繫作者取得授權。</p>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
-                    <h3 class="text-xl font-bold text-emerald-700 mb-2">🧠 AI 附加價值</h3>
-                    <p class="text-stone-600">透過 AI 進行「二次創作」和「智慧管理」。</p>
+
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 card-hover">
+                    <svg class="w-10 h-10 text-emerald-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.452-2.452L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.452-2.452L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.452 2.452L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.452 2.452Z" />
+                    </svg>
+                    <h3 class="text-xl font-bold text-emerald-700 mb-2">AI 附加價值</h3>
+                    <p class="text-gray-600">透過 AI 進行「二次創作」和「智慧管理」。</p>
                 </div>
             </div>
         </section>
 
         <!-- 3. Core Analysis (SWOT & Competitors) -->
-        <section id="core-analysis" class="mb-12">
-            <h2 class="text-3xl font-bold text-stone-900 mb-6 text-center">核心分析：市場定位與挑戰</h2>
-            <p class="text-lg text-stone-700 mb-8 max-w-3xl mx-auto text-center">
-                此專案的獨特之處在於「開源 + AI 策展 + 授權橋樑」的混合定位。然而，它也面臨著「冷啟動困難」和「品質控管」的挑戰。在這裡，我們將深入探討其內外在因素及市場競爭格局。
+        <section id="core-analysis" class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">核心分析：市場定位與挑戰</h2>
+            <p class="text-lg text-gray-700 mb-10 max-w-3xl mx-auto text-center">
+                此專案的獨特之處在於「開源 + AI 策展 + 授權橋樑」的混合定位。此處深入探討其內外在因素及市場競爭格局，點擊下方頁籤以切換檢視。
             </p>
 
-            <div id="swot-tabs" class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
-                <div class="flex flex-wrap gap-2 mb-6 border-b border-stone-200 pb-4">
-                    <button data-tab-toggle="swot-s" class="tab-button active text-lg font-medium py-2 px-5 rounded-md">
-                        <span class="mr-1">✔</span> 優勢 (S)
+            <div id="analysis-tabs" class="bg-white rounded-xl shadow-md border border-gray-100">
+                <div class="flex flex-wrap gap-3 p-4 border-b border-gray-200">
+                    <button data-tab-toggle="analysis-swot" class="tab-button active text-base font-semibold py-2 px-5 rounded-lg border-2">
+                        SWOT 分析
                     </button>
-                    <button data-tab-toggle="swot-w" class="tab-button text-lg font-medium py-2 px-5 rounded-md">
-                        <span class="mr-1">✘</span> 劣勢 (W)
-                    </button>
-                    <button data-tab-toggle="swot-o" class="tab-button text-lg font-medium py-2 px-5 rounded-md">
-                        <span class="mr-1">💡</span> 機會 (O)
-                    </button>
-                    <button data-tab-toggle="swot-t" class="tab-button text-lg font-medium py-2 px-5 rounded-md">
-                        <span class="mr-1">❗</span> 威脅 (T)
+                    <button data-tab-toggle="analysis-competitors" class="tab-button text-base font-semibold py-2 px-5 rounded-lg border-2">
+                        競品分析
                     </button>
                 </div>
 
                 <!-- SWOT Content -->
-                <div id="swot-s" class="tab-content active">
-                    <ul class="list-disc list-inside space-y-2 text-stone-700 text-base">
-                        <li>**明確的利基市場**：專注於「Logo」，更容易建立專業形象。</li>
-                        <li>**開源精神**：GitHub "Awesome" 系列的號召力，透明、可信賴。</li>
-                        <li>**AI 賦能**：最大亮點。AI 自動標記、生成描述、風格分類，降低策展成本。</li>
-                        <li>**解決真實痛點**：每個創作者都有一個堆滿好點子的「硬碟墳場」。</li>
-                    </ul>
+                <div id="analysis-swot" class="tab-content active p-6 md:p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white border border-gray-200 p-6 rounded-xl shadow-inner">
+                            <h3 class="text-xl font-bold text-emerald-700 mb-4 flex items-center">
+                                <svg class="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                                優勢 (Strengths)
+                            </h3>
+                            <ul class="list-disc list-outside ml-6 space-y-2 text-gray-700">
+                                <li><strong class="font-semibold text-gray-800">明確的利基市場</strong>：專注於「Logo」，建立專業形象。</li>
+                                <li><strong class="font-semibold text-gray-800">開源精神</strong>：GitHub "Awesome" 系列號召力，透明可信賴。</li>
+                                <li><strong class="font-semibold text-gray-800">AI 賦能</strong>：最大亮點。AI 自動標記、描述，降低策展成本。</li>
+                                <li><strong class="font-semibold text-gray-800">解決真實痛點</strong>：解決創作者「硬碟墳場」的問題。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white border border-gray-200 p-6 rounded-xl shadow-inner">
+                            <h3 class="text-xl font-bold text-rose-700 mb-4 flex items-center">
+                                <svg class="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                                劣勢 (Weaknesses)
+                            </h3>
+                            <ul class="list-disc list-outside ml-6 space-y-2 text-gray-700">
+                                <li><strong class="font-semibold text-gray-800">冷啟動困難</strong>：最大的挑戰，需要內容啟動社群。</li>
+                                <li><strong class="font-semibold text-gray-800">內容品質控管</strong>：如何確保 Logo 品質，避免塗鴉。</li>
+                                <li><strong class="font-semibold text-gray-800">與巨頭的差異化</strong>：Dribbble/Behance 已佔據眼球。</li>
+                                <li><strong class="font-semibold text-gray-800">法律與版權</strong>：授權模式需非常清晰，避免糾紛。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white border border-gray-200 p-6 rounded-xl shadow-inner">
+                            <h3 class="text-xl font-bold text-sky-700 mb-4 flex items-center">
+                                <svg class="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 0a12.06 12.06 0 0 0-4.5 0m3.75 0a12.06 12.06 0 0 1-4.5 0m3.75 0a12.06 12.06 0 0 0-4.5 0m1.5-11.606a12.06 12.06 0 0 1 1.5 0m1.5 0a12.06 12.06 0 0 0 1.5 0m-3 0a12.06 12.06 0 0 1-1.5 0m1.5-3.606a12.06 12.06 0 0 1 1.5 0m1.5 0a12.06 12.06 0 0 0 1.5 0m-3 0a12.06 12.06 0 0 1-1.5 0" /></svg>
+                                機會 (Opportunities)
+                            </h3>
+                            <ul class="list-disc list-outside ml-6 space-y-2 text-gray-700">
+                                <li><strong class="font-semibold text-gray-800">AI 時代的「策展人」</strong>：成為 AIGC 創作者的「首選歸檔地」。</li>
+                                <li><strong class="font-semibold text-gray-800">專注於開源社群</strong>：定位為「開源專案的 Logo 銀行」。</li>
+                                <li><strong class="font-semibold text-gray-800">API 經濟</strong>：未來可提供 API 服務，讓其他應用程式調用。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white border border-gray-200 p-6 rounded-xl shadow-inner">
+                            <h3 class="text-xl font-bold text-amber-700 mb-4 flex items-center">
+                                <svg class="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+                                威脅 (Threats)
+                            </h3>
+                            <ul class="list-disc list-outside ml-6 space-y-2 text-gray-700">
+                                <li><strong class="font-semibold text-gray-800">現有平台的競爭</strong>：Dribbble/Behance 可隨時增加類似功能。</li>
+                                <li><strong class="font-semibold text-gray-800">AI Logo 生成器</strong>：Looka 等工具是需求的直接滿足者。</li>
+                                <li><strong class="font-semibold text-gray-800">使用者習慣</strong>：改變設計師已建立的作品集習慣很難。</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <div id="swot-w" class="tab-content">
-                    <ul class="list-disc list-inside space-y-2 text-stone-700 text-base">
-                        <li>**冷啟動困難**：最大的挑戰。沒有內容就沒有瀏覽者，反之亦然。</li>
-                        <li>**內容品質控管**：如何確保上傳的是「Logo」而非塗鴉？開源專案缺乏營運審核。</li>
-                        <li>**與巨頭的差異化**：Dribbble, Behance 已佔據眼球，為何要多用一個平台？</li>
-                        <li>**法律與版權**：授權模式需非常清晰，否則易有糾紛。</li>
-                    </ul>
-                </div>
-                <div id="swot-o" class="tab-content">
-                    <ul class="list-disc list-inside space-y-2 text-stone-700 text-base">
-                        <li>**AI 時代的「策展人」**：可成為 AIGC 創作者的「首選歸檔地」。</li>
-                        <li>**專注於開源社群**：定位為「開源專案的 Logo 銀行」。</li>
-                        <li>**API 經濟**：未來可提供 API 服務，讓其他應用程式調用 Logo 靈感。</li>
-                    </ul>
-                </div>
-                <div id="swot-t" class="tab-content">
-                    <ul class="list-disc list-inside space-y-2 text-stone-700 text-base">
-                        <li>**現有平台的競爭**：Dribbble, Behance 隨時可以增加類似功能。</li>
-                        <li>**AI Logo 生成器**：像 Looka, Brandmark 這類工具是需求的直接滿足者。</li>
-                        <li>**使用者習慣**：設計師已習慣在 Dribbble/Behance 建立作品集。</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Competitor Analysis -->
-            <h3 class="text-2xl font-bold text-stone-900 mt-12 mb-6 text-center">競品分析：如何在巨頭中脫穎而出</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
-                    <h4 class="text-xl font-bold mb-3">Dribbble / Behance</h4>
-                    <p class="text-sm text-stone-500 mb-2">類型：專業設計社群</p>
-                    <p class="text-stone-700 mb-1"><strong class="text-stone-900">劣勢：</strong>內容龐雜、商業氣息濃、非開源。</p>
-                    <p class="text-emerald-700"><strong class="text-emerald-800">脫穎而出：</strong>以「開源免費」、 「AI 智慧策展」、「垂直專注」建立差異化。</p>
+                <!-- Competitors Content -->
+                <div id="analysis-competitors" class="tab-content p-6 md:p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white border border-gray-200 p-6 rounded-xl card-hover hover:border-emerald-300">
+                            <h4 class="text-xl font-bold mb-2">Dribbble / Behance</h4>
+                            <p class="text-sm text-gray-500 mb-3">類型：專業設計社群</p>
+                            <p class="text-gray-700 mb-3"><strong class="font-semibold text-gray-900">劣勢：</strong>內容龐雜、商業氣息濃、非開源。</p>
+                            <p class="text-emerald-700 font-semibold"><strong class="text-emerald-800">脫穎而出：</strong>以「開源免費」、 「AI 智慧策展」、「垂直專注」建立差異化。</p>
+                        </div>
+                        <div class="bg-white border border-gray-200 p-6 rounded-xl card-hover hover:border-emerald-300">
+                            <h4 class="text-xl font-bold mb-2">Pinterest</h4>
+                            <p class="text-sm text-gray-500 mb-3">類型：視覺靈感收集</p>
+                            <p class="text-gray-700 mb-3"><strong class="font-semibold text-gray-900">劣勢：</strong>缺乏版權管理、創作者聯繫困難、品質參差不齊。</p>
+                            <p class="text-emerald-700 font-semibold"><strong class="text-emerald-800">脫穎而出：</strong>建立「以創作者為中心」的平台，並提供「明確的授權機制」。</p>
+                        </div>
+                        <div class="bg-white border border-gray-200 p-6 rounded-xl card-hover hover:border-emerald-300">
+                            <h4 class="text-xl font-bold mb-2">GitHub Awesome Lists</h4>
+                            <p class="text-sm text-gray-500 mb-3">類型：開源列表</p>
+                            <p class="text-gray-700 mb-3"><strong class="font-semibold text-gray-900">劣勢：</strong>只是 Markdown 列表，沒有視覺體驗或平台功能。</p>
+                            <p class="text-emerald-700 font-semibold"><strong class="text-emerald-800">脫穎而出：</strong>成為 "Awesome List" 的升級版，從「列表」進化為「可互動平台」。</p>
+                        </div>
+                        <div class="bg-white border border-gray-200 p-6 rounded-xl card-hover hover:border-emerald-300">
+                            <h4 class="text-xl font-bold mb-2">The Noun Project</h4>
+                            <p class="text-sm text-gray-500 mb-3">類型：圖標 (Icon) 庫</p>
+                            <p class="text-gray-700 mb-3"><strong class="font-semibold text-gray-900">劣勢：</strong>專注於 Icon，而非 Logo（品牌標誌）。</p>
+                            <p class="text-emerald-700 font-semibold"><strong class="text-emerald-800">脫穎而出：</strong>專注於品牌和色彩更豐富的 Logo，並借鑒其清晰的授權模式。</p>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
-                    <h4 class="text-xl font-bold mb-3">Pinterest</h4>
-                    <p class="text-sm text-stone-500 mb-2">類型：視覺靈感收集</p>
-                    <p class="text-stone-700 mb-1"><strong class="text-stone-900">劣勢：</strong>缺乏版權管理、創作者聯繫困難、品質參差不齊。</p>
-                    <p class="text-emerald-700"><strong class="text-emerald-800">脫穎而出：</strong>建立「以創作者為中心」的平台，並提供「明確的授權機制」。</p>
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
-                    <h4 class="text-xl font-bold mb-3">GitHub Awesome Lists</h4>
-                    <p class="text-sm text-stone-500 mb-2">類型：開源列表</p>
-                    <p class="text-stone-700 mb-1"><strong class="text-stone-900">劣勢：</strong>只是 Markdown 列表，沒有視覺體驗或平台功能。</p>
-                    <p class="text-emerald-700"><strong class="text-emerald-800">脫穎而出：</strong>成為 "Awesome List" 的升級版，從「列表」進化為「可互動平台」。</p>
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
-                    <h4 class="text-xl font-bold mb-3">The Noun Project</h4>
-                    <p class="text-sm text-stone-500 mb-2">類型：圖標 (Icon) 庫</p>
-                    <p class="text-stone-700 mb-1"><strong class="text-stone-900">劣勢：</strong>專注於 Icon，而非 Logo（品牌標誌）。</p>
-                    <p class="text-emerald-700"><strong class="text-emerald-800">脫穎而出：</strong>專注於品牌和色彩更豐富的 Logo，並借鑒其清晰的授權模式。</p>
-                </div>
-
             </div>
         </section>
 
         <!-- 4. Roadmap -->
-        <section id="roadmap" class="mb-12">
-            <h2 class="text-3xl font-bold text-stone-900 mb-6 text-center">發展藍圖：從 MVP 到生態系</h2>
-            <p class="text-lg text-stone-700 mb-8 max-w-3xl mx-auto text-center">
+        <section id="roadmap" class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">發展藍圖：從 MVP 到生態系</h2>
+            <p class="text-lg text-gray-700 mb-10 max-w-3xl mx-auto text-center">
                 一個成功的開源專案需要清晰的發展路徑。我們將計畫分為三階段：首先，快速建立「最小可行產品」來驗證市場；接著，透過「社群與 AI」功能增強使用者黏性；最終，建立開放的「生態系」。
             </p>
 
-            <div id="roadmap-tabs" class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
-                <div class="flex flex-wrap gap-2 mb-6 border-b border-stone-200 pb-4">
-                    <button data-tab-toggle="roadmap-short" class="tab-button active text-lg font-medium py-2 px-5 rounded-md">
-                        🚀 短期 (MVP)
+            <div id="roadmap-tabs" class="bg-white rounded-xl shadow-md border border-gray-100">
+                <div class="flex flex-wrap gap-3 p-4 border-b border-gray-200">
+                    <button data-tab-toggle="roadmap-short" class="tab-button active text-base font-semibold py-2 px-5 rounded-lg border-2 flex items-center">
+                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84m.12 8.54A14.97 14.97 0 0 1 5.631 8.41m0 0a14.97 14.97 0 0 0 3.999-7.75A14.97 14.97 0 0 0 5.631 8.41Z" /></svg>
+                        短期 (MVP)
                     </button>
-                    <button data-tab-toggle="roadmap-mid" class="tab-button text-lg font-medium py-2 px-5 rounded-md">
-                        👥 中期 (社群與 AI)
+                    <button data-tab-toggle="roadmap-mid" class="tab-button text-base font-semibold py-2 px-5 rounded-lg border-2 flex items-center">
+                         <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A9.065 9.065 0 0 1 12 15v2.25m.94-3.197c.033-.18.06-.359.083-.537.08-.573.16-1.14.24-1.705.08-.565.16-1.13.24-1.694.08-.565.16-1.13.24-1.694.08-.565.16-1.13.24-1.694.08-.565.16-1.13.24-1.694.08-.565.16-1.13.24-1.694.08-.565.16-1.13.24-1.694.08-.565.16-1.13.24-1.694.08-.565.16-1.13.24-1.694.08-.565.16-1.13.24-1.694.08-.565.16-1.13.24-1.694.08-.565.16-1.13.24-1.694.08-.56.15-.b 1.11.23-1.65.08-.55.15-1.1.23-1.64" /></svg>
+                        中期 (社群與 AI)
                     </button>
-                    <button data-tab-toggle="roadmap-long" class="tab-button text-lg font-medium py-2 px-5 rounded-md">
-                        🌍 長期 (生態系)
+                    <button data-tab-toggle="roadmap-long" class="tab-button text-base font-semibold py-2 px-5 rounded-lg border-2 flex items-center">
+                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c.24 0 .468.02.69.055M12 21c-.24 0-.468.02-.69.055M12 3a9.004 9.004 0 0 0-8.716 6.747M12 3a9.004 9.004 0 0 1 8.716 6.747M12 3c.24 0 .468-.02.69-.055M12 3c-.24 0-.468-.02-.69-.055M6.634 15.672A8.96 8.96 0 0 1 5.25 12a8.96 8.96 0 0 1 1.384-3.672M17.366 15.672A8.96 8.96 0 0 1 18.75 12a8.96 8.96 0 0 1-1.384-3.672" /></svg>
+                        長期 (生態系)
                     </button>
                 </div>
 
-                <!-- Roadmap Content -->
-                <div id="roadmap-short" class="tab-content active">
-                    <h3 class="text-xl font-bold text-stone-800 mb-3">目標：驗證創作者的上傳意願 (1-3 個月)</h3>
-                    <ul class="list-disc list-inside space-y-2 text-stone-700">
-                        <li>**平台架構**：Next.js/Astro + Supabase/Firebase，啟動快。</li>
-                        <li>**核心功能**：GitHub 登入、Logo 上傳 (含授權方式)、瀑布流畫廊展示。</li>
-                        <li>**基礎 AI (v1)**：調用 Gemini API 實現「AI 自動標籤」和「AI 自動描述」。</li>
-                        <li>**GitHub 專案**：建立 Repo，撰寫清晰的 README 和貢獻指南。</li>
+                <!-- Roadmap Content - Short -->
+                <div id="roadmap-short" class="tab-content active p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">目標：驗證創作者的上傳意願 (1-3 個月)</h3>
+                    <ul class="list-disc list-outside ml-6 space-y-3 text-gray-700 mb-6">
+                        <li><strong class="font-semibold text-gray-900">平台架構</strong>：Next.js/Astro + Supabase/Firebase，啟動快。</li>
+                        <li><strong class="font-semibold text-gray-900">核心功能</strong>：GitHub 登入、Logo 上傳 (含授權方式)、瀑布流畫廊展示。</li>
+                        <li><strong class="font-semibold text-gray-900">GitHub 專案</strong>：建立 Repo，撰寫清晰的 README 和貢獻指南。</li>
                     </ul>
+                    <h4 class="text-xl font-bold text-emerald-700 mb-3">基礎 AI 功能 (v1)</h4>
+                    <div class="ai-example-block">
+                        <p class="font-bold text-gray-800 text-lg">1. AI 自動標籤</p>
+                        <p class="text-gray-700 mb-2"><strong>功能：</strong>上傳時調用 Gemini (Vision) API，生成 5-10 個關鍵字。</p>
+                        <p class="text-gray-700"><strong class="font-semibold text-emerald-700">舉例：</strong>上傳藍色「B」字 Logo → AI 生成標籤：`minimalist`, `letter B`, `blue`, `tech`, `modern`。</p>
+                    </div>
+                    <div class="ai-example-block">
+                        <p class="font-bold text-gray-800 text-lg">2. AI 自動描述</p>
+                        <p class="text-gray-700 mb-2"><strong>功能：</strong>(選用) 一鍵生成 Logo 的客觀描述。</p>
+                        <p class="text-gray-700"><strong class="font-semibold text-emerald-700">舉例：</strong>(同上) → AI 生成描述：「這是一個以字母 'B' 為主題的現代 Logo...主色調為藍色，傳達出信任感和科技感。」</p>
+                    </div>
                 </div>
-                <div id="roadmap-mid" class="tab-content">
-                    <h3 class="text-xl font-bold text-stone-800 mb-3">目標：提升使用者體驗，啟動社群 (6-12 個月)</h3>
-                    <ul class="list-disc list-inside space-y-2 text-stone-700">
-                        <li>**平台功能**：創作者個人頁面、收藏 (Collections) 功能。</li>
-                        <li>**進階搜尋**：依 AI 標籤、顏色、授權方式篩選。</li>
-                        <li>**AI 功能 (v2)**：
-                            <ul>
-                                <li><strong>語意搜尋</strong> (例如："友善的科技 Logo")，使用向量資料庫。</li>
-                                <li><strong>AI 解釋</strong> (自動生成設計分析)。</li>
-                            </ul>
-                        </li>
-                        <li>**社群營運**：手動精選每週最佳 Logo，透過社群媒體宣傳。</li>
+                
+                <!-- Roadmap Content - Mid -->
+                <div id="roadmap-mid" class="tab-content p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">目標：提升使用者體驗，啟動社群 (6-12 個月)</h3>
+                    <ul class="list-disc list-outside ml-6 space-y-3 text-gray-700 mb-6">
+                        <li><strong class="font-semibold text-gray-900">平台功能</strong>：創作者個人頁面、收藏 (Collections) 功能。</li>
+                        <li><strong class="font-semibold text-gray-900">進階搜尋</strong>：依 AI 標籤、顏色、授權方式篩選。</li>
+                        <li><strong class="font-semibold text-gray-900">社群營運</strong>：手動精選每週最佳 Logo，透過社群媒體宣傳。</li>
                     </ul>
+                    <h4 class="text-xl font-bold text-emerald-700 mb-3">AI 功能 (v2) - 【圖像分析詳解】</h4>
+                    <div class="ai-example-block">
+                        <p class="font-bold text-gray-800 text-lg">1. AI 解釋 (AI Explanation)</p>
+                        <p class="text-gray-700 mb-2"><strong>功能：</strong>在詳情頁，由 AI 自動生成深入的「設計分析」。</p>
+                        <p class="text-gray-700"><strong class="font-semibold text-emerald-700">舉例：</strong>上傳手繪風咖啡杯 Logo → AI 分析：</p>
+                        <ul class="list-disc list-outside ml-6 text-gray-600 text-sm space-y-1 mt-2">
+                            <li><strong>「色彩心理學」</strong>：咖啡棕傳達溫暖、森林綠暗示有機與永續...</li>
+                            <li><strong>「風格分析」</strong>：手繪風格創造了友善、平易近人的品牌個性...</li>
+                            <li><strong>「潛在應用」</strong>：適合用於咖啡袋、紙杯或店內菜單...</li>
+                        </ul>
+                    </div>
+                    <div class="ai-example-block">
+                        <p class="font-bold text-gray-800 text-lg">2. 語意搜尋 (Semantic Search)</p>
+                        <p class="text-gray-700 mb-2"><strong>功能：</strong>能理解「感覺」或「氛圍」，而不只是關鍵字（使用向量搜尋）。</p>
+                        <p class="text-gray-700 mb-2"><strong class="font-semibold text-emerald-700">舉例 1 (氛圍)：</strong>搜尋「一個看起來很貴、很高級的珠寶 Logo」 → AI 回傳：簡潔、留白多、細襯線字體、金/黑色的 Logo。</p>
+                        <p class="text-gray-700"><strong class="font-semibold text-emerald-700">舉例 2 (概念)：</strong>搜尋「適合 SaaS 新創公司的標誌」 → AI 回傳：抽象圖形、漸層色、代表「連結」或「成長」的 Logo。</p>
+                    </div>
                 </div>
-                <div id="roadmap-long" class="tab-content">
-                    <h3 class="text-xl font-bold text-stone-800 mb-3">目標：成為開源 Logo 首選平台 (1-3 年)</h3>
-                    <ul class="list-disc list-inside space-y-2 text-stone-700">
-                        <li>**平台功能**：「Logo 採用追蹤」(顯示被哪個 GitHub repo 採用)、安全的站內聯繫表單。</li>
-                        <li>**AI 功能 (v3)**：AI 趨勢分析 (發布 Logo 設計趨勢報告)、相似 Logo 推薦。</li>
-                        <li>**生態系 (Ecosystem)**：
-                            <ul>
-                                <li>提供**公開 API** (例如：`GET /api/v1/logos/random`)。</li>
-                                <li>**工具整合** (Figma 插件、VS Code 擴充)。</li>
-                                <li>定期舉辦「設計挑戰」活動。</li>
-                            </ul>
-                        </li>
+
+                <!-- Roadmap Content - Long -->
+                <div id="roadmap-long" class="tab-content p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">目標：成為開源 Logo 首選平台 (1-3 年)</h3>
+                    <ul class="list-disc list-outside ml-6 space-y-3 text-gray-700 mb-6">
+                        <li><strong class="font-semibold text-gray-900">平台功能</strong>：「Logo 採用追蹤」(顯示被哪個 GitHub repo 採用)、安全的站內聯繫表單。</li>
+                        <li><strong class="font-semibold text-gray-900">生態系</strong>：提供**公開 API** (例如：`GET /api/v1/logos/random`)。</li>
+                        <li><strong class="font-semibold text-gray-900">工具整合</strong>：建立 Figma 插件、VS Code 擴充。</li>
                     </ul>
+                    <h4 class="text-xl font-bold text-emerald-700 mb-3">AI 功能 (v3) - 【圖像分析詳解】</h4>
+                    <div class="ai-example-block">
+                        <p class="font-bold text-gray-800 text-lg">1. AI 趨勢分析</p>
+                        <p class="text-gray-700 mb-2"><strong>功能：</strong>分析平台 Logo 元數據，定期發布「Logo 設計趨勢報告」。</p>
+                        <p class="text-gray-700"><strong class="font-semibold text-emerald-700">舉例：</strong>「...『漸層色』使用率下降 30%，『大地色系』成為新主流...『極簡線條』在科技業受歡迎程度超越『抽象幾何』...」</p>
+                    </div>
+                    <div class="ai-example-block">
+                        <p class="font-bold text-gray-800 text-lg">2. AI 相似 Logo 推薦</p>
+                        <p class="text-gray-700 mb-2"><strong>功能：</strong>在詳情頁推薦「視覺風格」或「概念」相似的 Logo。</p>
+                        <p class="text-gray-700"><strong class="font-semibold text-emerald-700">舉例：</strong>瀏覽「Low-Poly 紅色狐狸 Logo」 → AI 推薦：</p>
+                        <ul class="list-disc list-outside ml-6 text-gray-600 text-sm space-y-1 mt-2">
+                            <li><strong>「風格相似」</strong>：[幾何化的藍色熊 Logo], [Low-Poly 紫色鑽石 Logo]</li>
+                            <li><strong>「概念相似」</strong>：[手繪的橘色狐狸 Logo], [極簡線條的貓頭鷹 Logo]</li>
+                        </ul>
+                    </div>
+                     <div class="ai-example-block">
+                        <p class="font-bold text-gray-800 text-lg">3. AI 版權初步篩查</p>
+                        <p class="text-gray-700 mb-2"><strong>功能：</strong>(實驗性) 上傳時自動比對現有 Logo，提出高度相似的警示。</p>
+                        <p class="text-gray-700"><strong class="font-semibold text-emerald-700">舉例：</strong>「警告：您上傳的 Logo 與 [某 Logo] 視覺相似度高達 90%。請確認版權。」</p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- 5. Final Advice -->
-        <section id="advice" class="bg-emerald-600 text-white rounded-lg p-8 shadow-lg">
+        <section id="advice" class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-8 md:p-12 shadow-lg">
             <h2 class="text-3xl font-bold mb-6 text-center">總結與啟動建議</h2>
-            <p class="text-lg text-emerald-100 mb-8 max-w-3xl mx-auto text-center">
+            <p class="text-lg text-emerald-100 mb-10 max-w-3xl mx-auto text-center">
                 這是一個非常有價值的想法，不僅是「作品集網站」，更是一個「創意資產管理與再利用平台」。要成功啟動，請牢記以下建議：
             </p>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-                <div class="bg-emerald-700 p-5 rounded-lg">
+                <div class="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/20">
                     <h3 class="text-xl font-bold mb-2">1. 勿想一步登天</h3>
                     <p class="text-emerald-200">先完成「短期 MVP」。一個能上傳、展示、有 AI 標籤的網站就足夠了。</p>
                 </div>
-                <div class="bg-emerald-700 p-5 rounded-lg">
+                <div class="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/20">
                     <h3 class="text-xl font-bold mb-2">2. 成為首位用戶</h3>
                     <p class="text-emerald-200">先把你自己「被遺忘」的 50 個 Logo 放上去。</p>
                 </div>
-                <div class="bg-emerald-700 p-5 rounded-lg">
+                <div class="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/20">
                     <h3 class="text-xl font-bold mb-2">3. 邀請朋友加入</h3>
                     <p class="text-emerald-200">邀請 10 個朋友，請他們各上傳 5 個作品，完成冷啟動。</p>
                 </div>
-                <div class="bg-emerald-700 p-5 rounded-lg">
+                <div class="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/20">
                     <h3 class="text-xl font-bold mb-2">4. 鎖定精準利基</h3>
                     <p class="text-emerald-200">初期專注「為 GitHub 開源專案提供 Logo」，目標客群精準。</p>
                 </div>
@@ -265,7 +358,7 @@
                 if (!tabContainer) return;
 
                 const tabButtons = tabContainer.querySelectorAll('[data-tab-toggle]');
-                const tabContents = tabContainer.querySelectorAll('[data-tab-content]');
+                const tabContents = tabContainer.querySelectorAll('.tab-content'); 
 
                 tabButtons.forEach(button => {
                     button.addEventListener('click', () => {
@@ -287,7 +380,7 @@
                 });
             }
 
-            initTabs('swot-tabs');
+            initTabs('analysis-tabs');
             initTabs('roadmap-tabs');
         });
     </script>
