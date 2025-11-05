@@ -97,5 +97,14 @@
       "數據追蹤",
       "資金管理"
     ]
+  },
+  "Awesome Logo Platform.html": {
+    "name": "Logo Platform",
+    "desc": "開源Logo平台，整合AI智能管理，助創作者保存、展示與商業化被遺忘的創意。",
+    "tags": [
+      "Logo",
+      "AI",
+      "開源"
+    ]
   }
 }
