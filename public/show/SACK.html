@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Santa's Sack ($SACK) - Executive Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts for Professional Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        neon: {
+                            red: 'var(--neon-red)',
+                            green: 'var(--matrix-green)',
+                            blue: 'var(--cyber-blue)',
+                        },
+                        bg: {
+                            main: 'var(--bg-main)',
+                            panel: 'var(--bg-panel)',
+                        },
+                        txt: {
+                            main: 'var(--text-main)',
+                            muted: 'var(--text-muted)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* CSS Variables for Theme Switching */
+        :root {
+            /* Default Dark Theme (Cyberpunk Night) */
+            --bg-main: #050505;
+            --bg-panel: rgba(20, 20, 20, 0.85);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --neon-red: #FF0033;
+            --matrix-green: #00FF00;
+            --cyber-blue: #00CCFF;
+            --border-color: #333;
+            --snowflake-color: #fff;
+            --select-bg: #111; /* Specific for dropdown readability */
+        }
+
+        [data-theme="light"] {
+            /* Light Theme (Polar Day) */
+            --bg-main: #f0f4f8;
+            --bg-panel: rgba(255, 255, 255, 0.9);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --neon-red: #dc2626; /* Darker red for visibility */
+            --matrix-green: #15803d; /* Darker green for visibility */
+            --cyber-blue: #0284c7;
+            --border-color: #cbd5e1;
+            --snowflake-color: #94a3b8;
+            --select-bg: #fff;
+        }
+        
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .glass-panel {
+            background: var(--bg-panel);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .neon-text-red {
+            color: var(--neon-red);
+            text-shadow: 0 0 5px var(--neon-red);
+        }
+        
+        /* Disable strong glow in light mode for readability */
+        [data-theme="light"] .neon-text-red {
+            text-shadow: none;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .snowflake {
+            color: var(--snowflake-color);
+            position: absolute;
+            top: -10px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Glitch effect only in dark mode */
+        [data-theme="dark"] .glitch:hover {
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+        }
+        
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+
+        /* Optimized Select Dropdown */
+        select {
+            background-color: var(--bg-panel);
+            color: var(--text-main);
+            border-color: var(--border-color);
+        }
+        
+        /* Force option styling to ensure visibility */
+        option {
+            background-color: var(--select-bg);
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden font-sans antialiased selection:bg-neon-red selection:text-white" data-theme="dark">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b border-gray-700/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition" onclick="window.scrollTo(0,0)">
+                    <span class="text-2xl">🎅</span>
+                    <span class="text-xl font-bold font-mono tracking-tighter neon-text-red">$SACK</span>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#vision" class="text-sm font-medium hover:text-neon-red transition" data-i18n="nav.vision">Vision</a>
+                    <a href="#mechanism" class="text-sm font-medium hover:text-neon-red transition" data-i18n="nav.mechanism">Mechanism</a>
+                    <a href="#data" class="text-sm font-medium hover:text-neon-red transition" data-i18n="nav.data">Data</a>
+                    <a href="#roadmap" class="text-sm font-medium hover:text-neon-red transition" data-i18n="nav.roadmap">Roadmap</a>
+                    <a href="#risk" class="text-sm font-medium hover:text-neon-red transition" data-i18n="nav.risks">Risks</a>
+                </div>
+
+                <!-- Settings Controls -->
+                <div class="flex items-center gap-3">
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-white/10 transition text-lg" id="theme-icon">
+                        ☀️
+                    </button>
+                    
+                    <!-- Language Select (Optimized with Flags & Colors) -->
+                    <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-transparent border border-gray-600 rounded px-2 py-1 text-xs focus:outline-none focus:border-neon-red font-mono cursor-pointer">
+                        <option value="en" selected>🇺🇸 EN</option>
+                        <option value="zh-TW">🇹🇼 繁中</option>
+                        <option value="zh-CN">🇨🇳 简中</option>
+                        <option value="ko">🇰🇷 한국어</option>
+                        <option value="es">🇪🇸 ES</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative pt-32 pb-20 flex flex-col items-center justify-center min-h-[85vh] text-center px-4 overflow-hidden">
+        <div class="absolute inset-0 overflow-hidden opacity-30 pointer-events-none" id="snow-container"></div>
+        
+        <div class="z-10 animate-fade-in-up">
+            <h1 class="text-5xl md:text-8xl font-black mb-2 glitch tracking-tighter leading-tight">
+                <span data-i18n="hero.project">PROJECT</span><br />
+                <span class="neon-text-red" data-i18n="hero.sack">SANTA'S SACK</span>
+            </h1>
+            
+            <p class="text-xl md:text-2xl text-neon-green font-bold font-mono mb-10 mt-4 typewriter" data-i18n="hero.slogan">
+                "Dump your bags. Recycle the pain."
+            </p>
+
+            <div class="max-w-xl mx-auto glass-panel p-1 rounded-full flex items-center justify-between pl-6 pr-1 shadow-lg shadow-neon-green/20 border-neon-green/30">
+                <code class="text-neon-green text-xs md:text-sm font-mono truncate mr-4" id="ca-text">Sack7bZAMtwVU1ceMwV6V293GXCyBtkhQNYYUGAWMqu</code>
+                <button onclick="copyCA()" class="bg-neon-green hover:brightness-110 text-black font-bold py-2 px-6 rounded-full transition shadow-lg text-sm whitespace-nowrap" data-i18n="hero.copy">
+                    COPY
+                </button>
+            </div>
+            <div id="copy-toast" class="mt-3 text-neon-green font-mono text-sm opacity-0 transition duration-300" data-i18n="hero.copied">
+                Copied to clipboard!
+            </div>
+        </div>
+    </header>
+
+    <!-- Section 1: Vision -->
+    <section id="vision" class="py-20 px-4 max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <span class="text-neon-red font-mono text-sm tracking-widest uppercase mb-2 block" data-i18n="vision.subtitle">Core Identity</span>
+            <h2 class="text-4xl font-bold mb-4" data-i18n="vision.title">Vision & Identity</h2>
+            <p class="text-txt-muted max-w-2xl mx-auto" data-i18n="vision.desc">
+                The 'Janitor' of Solana. Redefining Santa: He doesn't gift good kids; he recycles trash for Degens.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Card 1 -->
+            <div class="glass-panel p-8 rounded-2xl border-t-4 border-neon-red hover:-translate-y-2 transition duration-500 shadow-xl">
+                <div class="text-5xl mb-6">♻️</div>
+                <h3 class="text-xl font-bold mb-3" data-i18n="vision.card1.title">Utility</h3>
+                <p class="text-txt-muted text-sm leading-relaxed" data-i18n="vision.card1.desc">
+                    Real Burn-to-Earn mechanism. Convert dust into $SACK.
+                </p>
+            </div>
+            <!-- Card 2 -->
+            <div class="glass-panel p-8 rounded-2xl border-t-4 border-neon-green hover:-translate-y-2 transition duration-500 shadow-xl">
+                <div class="text-5xl mb-6">🕶️</div>
+                <h3 class="text-xl font-bold mb-3" data-i18n="vision.card2.title">Persona</h3>
+                <p class="text-txt-muted text-sm leading-relaxed" data-i18n="vision.card2.desc">
+                    Bad Santa. Sunglasses, Cigars. Motto: "Ho Ho HODL."
+                </p>
+            </div>
+            <!-- Card 3 -->
+            <div class="glass-panel p-8 rounded-2xl border-t-4 border-neon-blue hover:-translate-y-2 transition duration-500 shadow-xl">
+                <div class="text-5xl mb-6">🛡️</div>
+                <h3 class="text-xl font-bold mb-3" data-i18n="vision.card3.title">Trust</h3>
+                <p class="text-txt-muted text-sm leading-relaxed" data-i18n="vision.card3.desc">
+                    Freeze Revoked, LP Burned, Mint Revoked. Transparent.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Mechanism -->
+    <section id="mechanism" class="py-20 px-4 bg-black/20 border-y border-gray-800/50">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="text-neon-green font-mono text-sm tracking-widest uppercase mb-2 block" data-i18n="mech.subtitle">Architecture</span>
+                <h2 class="text-4xl font-bold mb-4" data-i18n="mech.title">Tech Architecture</h2>
+                <p class="text-txt-muted max-w-2xl mx-auto" data-i18n="mech.desc">
+                    Hybrid Web2/Web3 structure ensuring security and rate limiting. Hover over the flowchart to see details.
+                </p>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center justify-center gap-6 relative">
+                <!-- Step 1 -->
+                <div class="w-full md:w-1/3 p-6 glass-panel rounded-xl cursor-help transition hover:border-neon-green group relative"
+                     onmouseenter="updateTechDetail('user')" onmouseleave="resetTechDetail()">
+                    <div class="text-4xl text-center mb-4">👤</div>
+                    <h4 class="text-center font-bold mb-1" data-i18n="mech.step1.title">User Action</h4>
+                    <p class="text-center text-xs text-txt-muted font-mono" data-i18n="mech.step1.sub">Select & Sign</p>
+                </div>
+
+                <div class="text-3xl text-txt-muted animate-pulse hidden md:block">➞</div>
+                <div class="text-3xl text-txt-muted animate-pulse md:hidden">⬇</div>
+
+                <!-- Step 2 -->
+                <div class="w-full md:w-1/3 p-6 glass-panel rounded-xl cursor-help transition hover:border-neon-red group relative"
+                     onmouseenter="updateTechDetail('backend')" onmouseleave="resetTechDetail()">
+                    <div class="text-4xl text-center mb-4">🔥</div>
+                    <h4 class="text-center font-bold mb-1" data-i18n="mech.step2.title">Incinerator API</h4>
+                    <p class="text-center text-xs text-txt-muted font-mono" data-i18n="mech.step2.sub">Verify & Burn</p>
+                </div>
+
+                <div class="text-3xl text-txt-muted animate-pulse hidden md:block">➞</div>
+                <div class="text-3xl text-txt-muted animate-pulse md:hidden">⬇</div>
+
+                <!-- Step 3 -->
+                <div class="w-full md:w-1/3 p-6 glass-panel rounded-xl cursor-help transition hover:border-neon-green group relative"
+                     onmouseenter="updateTechDetail('dispenser')" onmouseleave="resetTechDetail()">
+                    <div class="text-4xl text-center mb-4">🎁</div>
+                    <h4 class="text-center font-bold mb-1" data-i18n="mech.step3.title">Dispenser</h4>
+                    <p class="text-center text-xs text-txt-muted font-mono" data-i18n="mech.step3.sub">Airdrop $SACK</p>
+                </div>
+            </div>
+            
+            <div id="tech-detail-display" class="mt-10 p-6 glass-panel border-l-4 border-neon-green text-neon-green font-mono text-sm min-h-[80px] flex items-center justify-center transition-all duration-300">
+                <span data-i18n="mech.hover">Hover over the flowchart to see technical details.</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Data Dashboard -->
+    <section id="data" class="py-20 px-4 max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <span class="text-neon-red font-mono text-sm tracking-widest uppercase mb-2 block" data-i18n="data.subtitle">Analytics</span>
+            <h2 class="text-4xl font-bold mb-4" data-i18n="data.title">Data Dashboard</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Chart 1 -->
+            <div class="glass-panel p-8 rounded-2xl">
+                <h3 class="text-xl font-bold mb-6 text-center" data-i18n="data.chart1.title">Tokenomics</h3>
+                <div class="chart-container">
+                    <canvas id="tokenomicsChart"></canvas>
+                </div>
+                <div class="mt-6 flex justify-center gap-6 text-sm font-mono">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-neon-green"></span>
+                        <span data-i18n="data.chart1.reserve">80% Reserve</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-neon-red"></span>
+                        <span data-i18n="data.chart1.liquidity">20% Liquidity</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart 2 -->
+            <div class="glass-panel p-8 rounded-2xl">
+                <h3 class="text-xl font-bold mb-6 text-center" data-i18n="data.chart2.title">Launch Budget (SOL)</h3>
+                <div class="chart-container">
+                    <canvas id="budgetChart"></canvas>
+                </div>
+                <div class="mt-6 text-center text-sm font-mono text-txt-muted">
+                    <span data-i18n="data.chart2.note">Recommended: 2 SOL + Liquidity</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Roadmap -->
+    <section id="roadmap" class="py-20 px-4 bg-black/20">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="text-neon-blue font-mono text-sm tracking-widest uppercase mb-2 block" data-i18n="roadmap.subtitle">Timeline</span>
+                <h2 class="text-4xl font-bold mb-4" data-i18n="roadmap.title">Execution Roadmap</h2>
+            </div>
+
+            <div class="relative border-l-2 border-neon-red ml-6 md:ml-0 space-y-12">
+                <!-- Phase 1 -->
+                <div class="relative pl-10 md:pl-0 md:grid md:grid-cols-5 md:gap-8 group">
+                    <div class="absolute -left-[9px] top-1 w-5 h-5 rounded-full bg-neon-red shadow-[0_0_15px_var(--neon-red)]"></div>
+                    <div class="md:col-span-1 md:text-right md:pt-1">
+                        <h3 class="text-lg font-bold text-neon-green" data-i18n="roadmap.phase1">Phase 1</h3>
+                        <span class="text-xs font-mono text-txt-muted" data-i18n="roadmap.status1">Done</span>
+                    </div>
+                    <div class="md:col-span-4 glass-panel p-6 rounded-xl hover:border-neon-green transition">
+                        <h4 class="font-bold text-lg mb-2" data-i18n="roadmap.p1.title">Genesis</h4>
+                        <ul class="list-disc list-inside text-sm text-txt-muted space-y-1" id="roadmap-list-1">
+                            <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="relative pl-10 md:pl-0 md:grid md:grid-cols-5 md:gap-8 group">
+                    <div class="absolute -left-[9px] top-1 w-5 h-5 rounded-full bg-gray-600 border-2 border-neon-red"></div>
+                    <div class="md:col-span-1 md:text-right md:pt-1">
+                        <h3 class="text-lg font-bold" data-i18n="roadmap.phase2">Phase 2</h3>
+                        <span class="text-xs font-mono text-txt-muted" data-i18n="roadmap.status2">Next 48h</span>
+                    </div>
+                    <div class="md:col-span-4 glass-panel p-6 rounded-xl opacity-80 hover:opacity-100 hover:border-neon-red transition">
+                        <h4 class="font-bold text-lg mb-2" data-i18n="roadmap.p2.title">Launch</h4>
+                        <ul class="list-disc list-inside text-sm text-txt-muted space-y-1" id="roadmap-list-2">
+                             <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                </div>
+
+                 <!-- Phase 3 -->
+                 <div class="relative pl-10 md:pl-0 md:grid md:grid-cols-5 md:gap-8 group">
+                    <div class="absolute -left-[9px] top-1 w-5 h-5 rounded-full bg-gray-600"></div>
+                    <div class="md:col-span-1 md:text-right md:pt-1">
+                        <h3 class="text-lg font-bold text-txt-muted" data-i18n="roadmap.phase3">Phase 3</h3>
+                        <span class="text-xs font-mono text-txt-muted" data-i18n="roadmap.status3">1-2 Wks</span>
+                    </div>
+                    <div class="md:col-span-4 glass-panel p-6 rounded-xl opacity-50 hover:opacity-100 transition">
+                        <h4 class="font-bold text-lg mb-2" data-i18n="roadmap.p3.title">Product</h4>
+                        <ul class="list-disc list-inside text-sm text-txt-muted space-y-1" id="roadmap-list-3">
+                             <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Risks -->
+    <section id="risk" class="py-20 px-4 max-w-7xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold" data-i18n="risks.title">Risk Protocol Terminal</h2>
+        </div>
+
+        <div class="bg-black border border-green-900 rounded-lg p-6 font-mono text-sm shadow-2xl max-w-3xl mx-auto overflow-hidden">
+            <div class="flex items-center gap-2 mb-6 border-b border-gray-800 pb-4">
+                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                <span class="text-txt-muted ml-2">root@sack-server:~/risk_protocol.exe</span>
+            </div>
+
+            <div class="space-y-4">
+                <div class="p-3 hover:bg-white/5 rounded cursor-pointer group" onclick="this.classList.toggle('active')">
+                    <div class="flex items-center gap-2 text-neon-green font-bold">
+                        <span>></span> <span data-i18n="risks.legal.title">[LEGAL] Legal Scan</span>
+                    </div>
+                    <div class="pl-5 mt-2 text-txt-muted hidden group-[.active]:block" data-i18n="risks.legal.desc">
+                        Disclaimer: Entertainment only. No financial advice. Status: Monitoring.
+                    </div>
+                </div>
+                <div class="p-3 hover:bg-white/5 rounded cursor-pointer group" onclick="this.classList.toggle('active')">
+                    <div class="flex items-center gap-2 text-neon-red font-bold">
+                        <span>></span> <span data-i18n="risks.tech.title">[TECH] Tech Audit</span>
+                    </div>
+                    <div class="pl-5 mt-2 text-txt-muted hidden group-[.active]:block" data-i18n="risks.tech.desc">
+                        Keys: Cold storage. Auth: Revoked. Status: Hardening.
+                    </div>
+                </div>
+                <div class="p-3 hover:bg-white/5 rounded cursor-pointer group" onclick="this.classList.toggle('active')">
+                    <div class="flex items-center gap-2 text-neon-blue font-bold">
+                        <span>></span> <span data-i18n="risks.market.title">[MARKET] Volatility</span>
+                    </div>
+                    <div class="pl-5 mt-2 text-txt-muted hidden group-[.active]:block" data-i18n="risks.market.desc">
+                        Strategy: Long-term build. Pivot to daily utility after holidays.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black py-10 border-t border-gray-800 text-center font-mono text-sm">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="text-2xl font-bold mb-6 neon-text-red">🎅 $SACK</p>
+            <div class="flex justify-center space-x-8 mb-8">
+                <a href="#" class="text-gray-500 hover:text-white transition">Twitter (X)</a>
+                <a href="#" class="text-gray-500 hover:text-white transition">Telegram</a>
+                <a href="#" class="text-gray-500 hover:text-white transition">DexScreener</a>
+            </div>
+            <div class="text-xs text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                <p class="mb-2">⚠️ <span data-i18n="footer.disclaimer_title">Disclaimer</span></p>
+                <p data-i18n="footer.disclaimer_text">
+                    $SACK is a memecoin for entertainment. No intrinsic value. DYOR.
+                </p>
+            </div>
+            <p class="text-xs text-gray-800 mt-6">&copy; 2025 Project Santa's Sack.</p>
+        </div>
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        // --- Translations Database ---
+        const i18n = {
+            "zh-TW": {
+                pageTitle: "Project Santa's Sack ($SACK) - 執行計畫儀表板",
+                nav: { vision: "願景", mechanism: "機制", data: "數據", roadmap: "路線圖", risks: "風控" },
+                hero: { project: "聖誕老人的", sack: "麻布袋計畫", slogan: "\"傾倒你的廢物，回收你的痛苦。\"", copy: "複製", copied: "已複製！" },
+                vision: { subtitle: "Core Identity", title: "核心願景 & 識別", desc: "Solana 生態的「清道夫」。我們重新定義聖誕老人：他不再送禮給好孩子，而是專門回收賭徒 (Degens) 的垃圾。", 
+                          card1: { title: "Utility (效用)", desc: "真實的 Burn-to-Earn 機制。將無價值的粉塵幣轉化為 $SACK。" },
+                          card2: { title: "Persona (人設)", desc: "Bad Santa。戴墨鏡、抽雪茄。口頭禪：\"Ho Ho HODL.\"" },
+                          card3: { title: "Trust (信任)", desc: "凍結權移除、LP 燒毀、鑄幣權移除。絕對透明。" } },
+                mech: { subtitle: "Architecture", title: "技術架構", desc: "混合式 Web2/Web3 架構，確保安全性與速率限制。", 
+                        step1: { title: "用戶操作", sub: "Select & Sign" }, step2: { title: "焚化爐 API", sub: "Verify & Burn" }, step3: { title: "分發器", sub: "Airdrop $SACK" },
+                        hover: "將滑鼠懸停在上方流程圖以查看技術細節。",
+                        detail1: "> CLIENT: 前端構建交易，僅請求轉移特定代幣權限。", detail2: "> SERVER: Serverless API 驗證數據，防止刷單。", detail3: "> DISPENSER: 熱錢包自動發獎，主庫存隔離。" },
+                data: { subtitle: "Analytics", title: "數據儀表板", 
+                        chart1: { title: "代幣經濟", reserve: "80% 儲備", liquidity: "20% 流動性" },
+                        chart2: { title: "啟動預算 (SOL)", note: "建議總準備: 2 SOL + 流動性資金" } },
+                roadmap: { subtitle: "Timeline", title: "執行路線圖", phase1: "階段一", status1: "已完成", p1: { title: "創世 Genesis" },
+                           phase2: "階段二", status2: "未來 48h", p2: { title: "發射 Launch" },
+                           phase3: "階段三", status3: "1-2 週", p3: { title: "落地 Product" },
+                           lists: [
+                               ["代幣部署 & Metadata", "凍結權移除 (安全)", "AI 素材生成", "社群帳號設立"],
+                               ["購買 OpenBook Market ID", "Raydium 建池", "X 平台行銷閃電戰", "LP 燒毀證明"],
+                               ["垃圾回收機 dApp 上線", "連擊系統實裝", "代幣通縮循環啟動"]
+                           ] },
+                risks: { title: "風險控制終端", 
+                         legal: { title: "[LEGAL] 法律風險", desc: "聲明：嚴格僅供娛樂用途。避免承諾財務回報。狀態：監控中。" },
+                         tech: { title: "[TECH] 技術風險", desc: "私鑰安全：已冷儲存。權限管理：已移除。狀態：強化中。" },
+                         market: { title: "[MARKET] 市場波動", desc: "對策：接受波動，專注建設。熱度維持：轉型日常功能。" } },
+                footer: { disclaimer_title: "免責聲明", disclaimer_text: "$SACK 僅供娛樂，無內在價值。投資風險自負。" }
+            },
+            "zh-CN": {
+                pageTitle: "Project Santa's Sack ($SACK) - 执行计划仪表板",
+                nav: { vision: "愿景", mechanism: "机制", data: "数据", roadmap: "路线图", risks: "风控" },
+                hero: { project: "圣诞老人的", sack: "麻布袋计划", slogan: "\"倾倒你的废物，回收你的痛苦。\"", copy: "复制", copied: "已复制！" },
+                vision: { subtitle: "Core Identity", title: "核心愿景 & 识别", desc: "Solana 生态的“清道夫”。我们重新定义圣诞老人：他不再送礼给好孩子，而是专门回收赌徒 (Degens) 的垃圾。", 
+                          card1: { title: "Utility (效用)", desc: "真实的 Burn-to-Earn 机制。将无价值的粉尘币转化为 $SACK。" },
+                          card2: { title: "Persona (人设)", desc: "Bad Santa。戴墨镜、抽雪茄。口头禅：\"Ho Ho HODL.\"" },
+                          card3: { title: "Trust (信任)", desc: "冻结权移除、LP 烧毁、铸币权移除。绝对透明。" } },
+                mech: { subtitle: "Architecture", title: "技术架构", desc: "混合式 Web2/Web3 架构，确保安全性与速率限制。", 
+                        step1: { title: "用户操作", sub: "Select & Sign" }, step2: { title: "焚化炉 API", sub: "Verify & Burn" }, step3: { title: "分发器", sub: "Airdrop $SACK" },
+                        hover: "将鼠标悬停在上方流程图以查看技术细节。",
+                        detail1: "> CLIENT: 前端构建交易，仅请求转移特定代币权限。", detail2: "> SERVER: Serverless API 验证数据，防止刷单。", detail3: "> DISPENSER: 热钱包自动发奖，主库存隔离。" },
+                data: { subtitle: "Analytics", title: "数据仪表板", 
+                        chart1: { title: "代币经济", reserve: "80% 储备", liquidity: "20% 流动性" },
+                        chart2: { title: "启动预算 (SOL)", note: "建议总准备: 2 SOL + 流动性资金" } },
+                roadmap: { subtitle: "Timeline", title: "执行路线图", phase1: "阶段一", status1: "已完成", p1: { title: "创世 Genesis" },
+                           phase2: "阶段二", status2: "未来 48h", p2: { title: "发射 Launch" },
+                           phase3: "阶段三", status3: "1-2 周", p3: { title: "落地 Product" },
+                           lists: [
+                               ["代币部署 & Metadata", "冻结权移除 (安全)", "AI 素材生成", "社群账号设立"],
+                               ["购买 OpenBook Market ID", "Raydium 建池", "X 平台营销闪电战", "LP 烧毁证明"],
+                               ["垃圾回收机 dApp 上线", "连击系统实装", "代币通缩循环启动"]
+                           ] },
+                risks: { title: "风险控制终端", 
+                         legal: { title: "[LEGAL] 法律风险", desc: "声明：严格仅供娱乐用途。避免承诺财务回报。状态：监控中。" },
+                         tech: { title: "[TECH] 技术风险", desc: "私钥安全：已冷存储。权限管理：已移除。状态：强化中。" },
+                         market: { title: "[MARKET] 市场波动", desc: "对策：接受波动，专注建设。热度维持：转型日常功能。" } },
+                footer: { disclaimer_title: "免责声明", disclaimer_text: "$SACK 仅供娱乐，无内在价值。投资风险自负。" }
+            },
+            "en": {
+                pageTitle: "Project Santa's Sack ($SACK) - Executive Dashboard",
+                nav: { vision: "Vision", mechanism: "Mechanism", data: "Data", roadmap: "Roadmap", risks: "Risks" },
+                hero: { project: "PROJECT", sack: "SANTA'S SACK", slogan: "\"Dump your bags. Recycle the pain.\"", copy: "COPY", copied: "Copied!" },
+                vision: { subtitle: "Core Identity", title: "Vision & Identity", desc: "The 'Janitor' of Solana. Redefining Santa: He doesn't gift good kids; he recycles trash for Degens.", 
+                          card1: { title: "Utility", desc: "Real Burn-to-Earn mechanism. Convert dust into $SACK." },
+                          card2: { title: "Persona", desc: "Bad Santa. Sunglasses, Cigars. Motto: \"Ho Ho HODL.\"" },
+                          card3: { title: "Trust", desc: "Freeze Revoked, LP Burned, Mint Revoked. Transparent." } },
+                mech: { subtitle: "Architecture", title: "Tech Architecture", desc: "Hybrid Web2/Web3 structure ensuring security and rate limiting.", 
+                        step1: { title: "User Action", sub: "Select & Sign" }, step2: { title: "Incinerator API", sub: "Verify & Burn" }, step3: { title: "Dispenser", sub: "Airdrop $SACK" },
+                        hover: "Hover over the flowchart to see technical details.",
+                        detail1: "> CLIENT: Frontend constructs tx, requesting only transfer permissions.", detail2: "> SERVER: Serverless API verifies data, prevents spam.", detail3: "> DISPENSER: Hot wallet auto-signs rewards. Cold storage isolated." },
+                data: { subtitle: "Analytics", title: "Data Dashboard", 
+                        chart1: { title: "Tokenomics", reserve: "80% Reserve", liquidity: "20% Liquidity" },
+                        chart2: { title: "Launch Budget (SOL)", note: "Recommended: 2 SOL + Liquidity" } },
+                roadmap: { subtitle: "Timeline", title: "Execution Roadmap", phase1: "Phase 1", status1: "Done", p1: { title: "Genesis" },
+                           phase2: "Phase 2", status2: "Next 48h", p2: { title: "Launch" },
+                           phase3: "Phase 3", status3: "1-2 Wks", p3: { title: "Product" },
+                           lists: [
+                               ["Token Deployment & Metadata", "Freeze Revoked (Safety)", "AI Assets Gen", "Socials Setup"],
+                               ["Buy OpenBook Market ID", "Raydium Pool", "X Marketing Blitz", "LP Burn Proof"],
+                               ["Recycler dApp Live", "Combo System", "Deflationary Loop Start"]
+                           ] },
+                risks: { title: "Risk Protocol Terminal", 
+                         legal: { title: "[LEGAL] Legal Scan", desc: "Disclaimer: Entertainment only. No financial advice. Status: Monitoring." },
+                         tech: { title: "[TECH] Tech Audit", desc: "Keys: Cold storage. Auth: Revoked. Status: Hardening." },
+                         market: { title: "[MARKET] Volatility", desc: "Strategy: Long-term build. Pivot to daily utility after holidays." } },
+                footer: { disclaimer_title: "Disclaimer", disclaimer_text: "$SACK is a memecoin for entertainment. No intrinsic value. DYOR." }
+            },
+            "ko": {
+                pageTitle: "Project Santa's Sack ($SACK) - 실행 계획 대시보드",
+                nav: { vision: "비전", mechanism: "메커니즘", data: "데이터", roadmap: "로드맵", risks: "리스크" },
+                hero: { project: "산타의", sack: "자루 프로젝트", slogan: "\"가방을 버려라. 고통을 재활용하라.\"", copy: "복사", copied: "복사됨!" },
+                vision: { subtitle: "Core Identity", title: "핵심 비전 & 정체성", desc: "솔라나 생태계의 '청소부'. 산타의 재정의: 착한 아이에게 선물하는 게 아니라, 도박꾼들의 쓰레기를 재활용합니다.", 
+                          card1: { title: "유틸리티", desc: "진정한 Burn-to-Earn. 먼지 코인을 $SACK으로 전환." },
+                          card2: { title: "페르소나", desc: "배드 산타. 선글라스, 시가. 모토: \"Ho Ho HODL.\"" },
+                          card3: { title: "신뢰", desc: "동결 권한 포기, LP 소각, 발행 권한 포기. 투명성." } },
+                mech: { subtitle: "Architecture", title: "기술 아키텍처", desc: "보안과 속도 제한을 보장하는 하이브리드 Web2/Web3 구조.", 
+                        step1: { title: "사용자", sub: "선택 및 서명" }, step2: { title: "소각 API", sub: "검증 및 소각" }, step3: { title: "분배기", sub: "에어드랍 $SACK" },
+                        hover: "기술 세부 사항을 보려면 순서도 위로 마우스를 가져가세요.",
+                        detail1: "> CLIENT: 프론트엔드 트랜잭션 생성, 전송 권한만 요청.", detail2: "> SERVER: API 데이터 검증, 스팸 방지.", detail3: "> DISPENSER: 핫 월렛 자동 서명. 콜드 스토리지 격리." },
+                data: { subtitle: "Analytics", title: "데이터 대시보드", 
+                        chart1: { title: "토크노믹스", reserve: "80% 예비", liquidity: "20% 유동성" },
+                        chart2: { title: "출시 예산 (SOL)", note: "권장: 2 SOL + 유동성 자금" } },
+                roadmap: { subtitle: "Timeline", title: "실행 로드맵", phase1: "1단계", status1: "완료됨", p1: { title: "제네시스" },
+                           phase2: "2단계", status2: "48시간 내", p2: { title: "런치" },
+                           phase3: "3단계", status3: "1-2 주", p3: { title: "프로덕트" },
+                           lists: [
+                               ["토큰 배포 & 메타데이터", "동결 권한 포기 (안전)", "AI 자산 생성", "소셜 설정"],
+                               ["OpenBook 마켓 ID 구매", "Raydium 풀", "X 마케팅 공세", "LP 소각 증명"],
+                               ["리사이클러 dApp 라이브", "콤보 시스템", "디플레이션 루프 시작"]
+                           ] },
+                risks: { title: "리스크 관리 터미널", 
+                         legal: { title: "[LEGAL] 법적 스캔", desc: "면책: 오락용입니다. 재정적 조언 없음. 상태: 모니터링 중." },
+                         tech: { title: "[TECH] 기술 감사", desc: "키: 콜드 스토리지. 권한: 포기됨. 상태: 강화 중." },
+                         market: { title: "[MARKET] 변동성", desc: "전략: 장기 구축. 휴일 이후 일상 유틸리티로 전환." } },
+                footer: { disclaimer_title: "면책 조항", disclaimer_text: "$SACK은 오락용 밈코인입니다. 내재 가치 없음. 투자 유의." }
+            },
+            "es": {
+                pageTitle: "Project Santa's Sack ($SACK) - Panel Ejecutivo",
+                nav: { vision: "Visión", mechanism: "Mecanismo", data: "Datos", roadmap: "Hoja de ruta", risks: "Riesgos" },
+                hero: { project: "PROYECTO", sack: "SACO DE SANTA", slogan: "\"Tira tus bolsas. Recicla el dolor.\"", copy: "COPIAR", copied: "¡Copiado!" },
+                vision: { subtitle: "Core Identity", title: "Visión & Identidad", desc: "El 'Conserje' de Solana. Redefiniendo a Santa: No da regalos a niños buenos; recicla basura para Degens.", 
+                          card1: { title: "Utilidad", desc: "Mecanismo real Burn-to-Earn. Convierte polvo en $SACK." },
+                          card2: { title: "Persona", desc: "Bad Santa. Gafas, Cigarros. Lema: \"Ho Ho HODL.\"" },
+                          card3: { title: "Confianza", desc: "Freeze Revocado, LP Quemado. Transparente." } },
+                mech: { subtitle: "Architecture", title: "Arquitectura Técnica", desc: "Estructura híbrida Web2/Web3 para seguridad.", 
+                        step1: { title: "Usuario", sub: "Seleccionar" }, step2: { title: "API Incinerador", sub: "Verificar" }, step3: { title: "Dispensador", sub: "Airdrop" },
+                        hover: "Pasa el mouse sobre el diagrama para detalles.",
+                        detail1: "> CLIENTE: Frontend construye tx, solo pide permisos de transferencia.", detail2: "> SERVIDOR: API verifica datos, previene spam.", detail3: "> DISPENSADOR: Billetera caliente firma auto. Almacén frío aislado." },
+                data: { subtitle: "Analytics", title: "Panel de Datos", 
+                        chart1: { title: "Tokenomics", reserve: "80% Reserva", liquidity: "20% Liquidez" },
+                        chart2: { title: "Presupuesto (SOL)", note: "Recomendado: 2 SOL + Liquidez" } },
+                roadmap: { subtitle: "Timeline", title: "Hoja de Ruta", phase1: "Fase 1", status1: "Hecho", p1: { title: "Génesis" },
+                           phase2: "Fase 2", status2: "Próx 48h", p2: { title: "Lanzamiento" },
+                           phase3: "Fase 3", status3: "1-2 Sem", p3: { title: "Producto" },
+                           lists: [
+                               ["Despliegue Token & Metadata", "Freeze Revocado", "Generación AI", "Config Social"],
+                               ["Comprar ID OpenBook", "Pool Raydium", "Marketing en X", "Prueba Quema LP"],
+                               ["dApp Reciclador en Vivo", "Sistema Combo", "Inicio Ciclo Deflacionario"]
+                           ] },
+                risks: { title: "Terminal de Riesgos", 
+                         legal: { title: "[LEGAL] Escaneo Legal", desc: "Descargo: Solo entretenimiento. No consejo financiero." },
+                         tech: { title: "[TECH] Auditoría", desc: "Llaves: Almacén frío. Auth: Revocado. Estado: Endureciendo." },
+                         market: { title: "[MARKET] Volatilidad", desc: "Estrategia: Construcción a largo plazo." } },
+                footer: { disclaimer_title: "Descargo", disclaimer_text: "$SACK es una memecoin para entretenimiento. Sin valor intrínseco." }
+            }
+        };
+
+        // --- Core Functions ---
+
+        let currentLang = 'en'; // Changed default to English as requested
+        let currentTheme = 'dark';
+        let charts = {};
+
+        function updateContent() {
+            const langData = i18n[currentLang];
+            
+            // Update Page Title
+            if (langData.pageTitle) {
+                document.title = langData.pageTitle;
+            }
+
+            // Text Replacements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const keys = key.split('.');
+                let val = langData;
+                keys.forEach(k => { val = val ? val[k] : null });
+                if (val) el.innerText = val;
+            });
+
+            // List Replacements (Roadmap)
+            const listIds = ['roadmap-list-1', 'roadmap-list-2', 'roadmap-list-3'];
+            listIds.forEach((id, idx) => {
+                const listEl = document.getElementById(id);
+                if (listEl && langData.roadmap.lists[idx]) {
+                    listEl.innerHTML = langData.roadmap.lists[idx].map(item => `<li>${item}</li>`).join('');
+                }
+            });
+
+            // Update Charts
+            updateCharts();
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            updateContent();
+        }
+
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', currentTheme);
+            document.getElementById('theme-icon').innerText = currentTheme === 'dark' ? '☀️' : '🌙';
+            
+            // Update snow color
+            document.documentElement.style.setProperty('--snowflake-color', currentTheme === 'dark' ? '#fff' : '#94a3b8');
+            
+            updateCharts();
+        }
+
+        function updateCharts() {
+            const langData = i18n[currentLang];
+            const isDark = currentTheme === 'dark';
+            const textColor = isDark ? '#e2e8f0' : '#1e293b';
+            const gridColor = isDark ? '#333' : '#e2e8f0';
+
+            // Chart 1: Tokenomics
+            if (charts.tokenomics) charts.tokenomics.destroy();
+            const ctxToken = document.getElementById('tokenomicsChart').getContext('2d');
+            charts.tokenomics = new Chart(ctxToken, {
+                type: 'doughnut',
+                data: {
+                    labels: [langData.data.chart1.reserve, langData.data.chart1.liquidity],
+                    datasets: [{
+                        data: [80, 20],
+                        backgroundColor: isDark ? ['#00FF00', '#FF0033'] : ['#16a34a', '#dc2626'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: textColor, font: { family: 'Inter' } }
+                        },
+                        tooltip: {
+                            backgroundColor: isDark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)',
+                            titleColor: textColor,
+                            bodyColor: textColor,
+                            borderColor: isDark ? '#333' : '#e2e8f0',
+                            borderWidth: 1
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Budget
+            if (charts.budget) charts.budget.destroy();
+            const ctxBudget = document.getElementById('budgetChart').getContext('2d');
+            charts.budget = new Chart(ctxBudget, {
+                type: 'bar',
+                data: {
+                    labels: ['Deploy/Misc', 'Market ID', 'Liquidity (Min)', 'Liquidity (Max)'],
+                    datasets: [{
+                        label: 'SOL',
+                        data: [0.52, 0.4, 5, 10],
+                        backgroundColor: [
+                            'rgba(148, 163, 184, 0.6)',
+                            isDark ? 'rgba(255, 0, 51, 0.6)' : 'rgba(220, 38, 38, 0.6)',
+                            isDark ? 'rgba(0, 255, 0, 0.6)' : 'rgba(22, 163, 74, 0.6)',
+                            isDark ? 'rgba(0, 255, 0, 0.9)' : 'rgba(22, 163, 74, 0.9)'
+                        ],
+                        borderColor: [
+                            '#94a3b8',
+                            isDark ? '#FF0033' : '#dc2626',
+                            isDark ? '#00FF00' : '#16a34a',
+                            isDark ? '#00FF00' : '#16a34a'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { family: 'JetBrains Mono' } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: textColor, font: { family: 'Inter' } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: isDark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)',
+                            titleColor: textColor,
+                            bodyColor: textColor
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Interaction Logic ---
+        function copyCA() {
+            const caText = document.getElementById('ca-text').innerText;
+            navigator.clipboard.writeText(caText).then(() => {
+                const toast = document.getElementById('copy-toast');
+                toast.classList.remove('opacity-0');
+                setTimeout(() => toast.classList.add('opacity-0'), 2000);
+            });
+        }
+
+        function updateTechDetail(step) {
+            const display = document.getElementById('tech-detail-display');
+            const langData = i18n[currentLang];
+            const isDark = currentTheme === 'dark';
+            
+            let content = "";
+            let borderColor = isDark ? "border-neon-green" : "border-green-600";
+            let colorClass = isDark ? "text-neon-green" : "text-green-700";
+
+            if (step === 'user') content = langData.mech.detail1;
+            else if (step === 'backend') {
+                content = langData.mech.detail2;
+                colorClass = isDark ? "text-neon-red" : "text-red-700";
+                borderColor = isDark ? "border-neon-red" : "border-red-600";
+            } 
+            else if (step === 'dispenser') content = langData.mech.detail3;
+
+            display.innerHTML = content;
+            display.className = `mt-10 p-6 glass-panel border-l-4 ${borderColor} ${colorClass} font-mono text-sm min-h-[80px] flex items-center justify-center transition-all duration-300 shadow-lg`;
+        }
+
+        function resetTechDetail() {
+            const display = document.getElementById('tech-detail-display');
+            display.innerHTML = i18n[currentLang].mech.hover;
+            display.className = `mt-10 p-6 glass-panel border-l-4 border-gray-500 text-txt-muted font-mono text-sm min-h-[80px] flex items-center justify-center`;
+        }
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Snow Effect
+            const snowContainer = document.getElementById('snow-container');
+            for (let i = 0; i < 50; i++) {
+                const flake = document.createElement('div');
+                flake.className = 'snowflake';
+                flake.innerHTML = '❄';
+                flake.style.left = Math.random() * 100 + '%';
+                flake.style.animation = `fall ${Math.random() * 5 + 5}s linear infinite`;
+                flake.style.opacity = Math.random();
+                flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                snowContainer.appendChild(flake);
+            }
+            
+            // Initial Render
+            updateContent();
+        });
+    </script>
+    <style>
+        @keyframes fall {
+            0% { transform: translateY(-10vh); }
+            100% { transform: translateY(110vh); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</body>
+</html>
